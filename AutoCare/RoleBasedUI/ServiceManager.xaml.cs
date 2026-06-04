@@ -13,6 +13,9 @@ using System.Windows.Shapes;
 
 namespace AutoCare.RoleBasedUI
 {
+    /// <summary>
+    /// Interaction logic for ServiceManager.xaml
+    /// </summary>
     public partial class ServiceManager : Page
     {
         public ServiceManager()
@@ -20,19 +23,20 @@ namespace AutoCare.RoleBasedUI
             InitializeComponent();
         }
 
-        private void LogoutButton_Click(object sender, RoutedEventArgs e)
+        private void BtnAddItem_Click(object sender, RoutedEventArgs e)
         {
-            MainWindow mainWindow = Application.Current?.MainWindow as MainWindow ?? Window.GetWindow(this) as MainWindow;
-            if (mainWindow != null)
-            {
-                var nav = mainWindow.MainFrame.NavigationService;
-                if (nav != null)
-                {
-                    while (nav.RemoveBackEntry() != null) { }
-                }
+            // TODO: Add item to inventory logic
+            MessageBox.Show("Add Item button clicked!", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
 
-                mainWindow.MainFrame.Content = null;
-            }
+        private void BtnImport_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO: Import CSV logic
+        }
+
+        private void BtnExport_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO: Export CSV logic
         }
     }
 }

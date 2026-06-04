@@ -8,31 +8,80 @@
       Title="Service Manager Dashboard"
       Background="#FFFFFF">
 
-    <Grid>
-        <Button x:Name="LogoutButton" Content="Logout" 
-                HorizontalAlignment="Right" 
-                VerticalAlignment="Top" 
-                Margin="0,20,20,0" 
-                Padding="15,6" 
-                Background="#D9534F" 
-                Foreground="White" 
-                FontWeight="Bold" 
-                BorderThickness="0"
-                Cursor="Hand"
-                Click="LogoutButton_Click"/>
+    <Grid Background="#F4F6F7">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock Text="Service Manager Dashboard" 
-                       FontSize="26" 
-                       FontWeight="Bold" 
-                       Foreground="#2C3E50" 
-                       HorizontalAlignment="Center" 
-                       Margin="0,0,0,10"/>
+        <Border Background="#2C3E50" Grid.Row="0" Padding="15,0">
+            <Grid>
+                <TextBlock FontSize="18" FontWeight="Bold" Foreground="White" Text="🛠️ AUTOCARE - SERVICE MANAGER WORKSPACE" VerticalAlignment="Center"/>
+                <TextBlock FontSize="14" Foreground="#BDC3C7" HorizontalAlignment="Right" Text="Passcode: 0002" VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
 
-            <TextBlock Text="This page has connected to MainWindow. Now you can start implementation." 
-                       FontSize="16" 
-                       Foreground="#7F8C8D" 
-                       HorizontalAlignment="Center"/>
-        </StackPanel>
+        <Border Background="#FADBD8" BorderBrush="#E74C3C" BorderThickness="2" CornerRadius="5" Grid.Row="1" Margin="15,10,15,5" Padding="10" Visibility="Collapsed" x:Name="LowStockAlertBorder">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock FontSize="14" FontWeight="Bold" Foreground="#C0392B" Text="⚠️ LOW STOCK ALERT: "/>
+                <TextBlock FontSize="14" Foreground="#C0392B" Text="Some spare parts are below the minimum stock level!" x:Name="TxtAlertMessage"/>
+            </StackPanel>
+        </Border>
+
+        <TabControl Background="White" Grid.Row="2" Margin="15,10,15,15">
+
+            <TabItem FontSize="14" Header="📦 Inventory Control" Padding="10,5">
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="280"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Background="#FBFCFC" Grid.Column="0" Margin="0,0,10,0" Padding="10">
+                        <StackPanel>
+                            <TextBlock FontSize="15" FontWeight="Bold" Foreground="#34495E" Margin="0,0,0,10" Text="Add New Item"/>
+
+                            <TextBlock FontSize="12" Margin="0,5,0,2" Text="Item Name:"/>
+                            <TextBox Height="28" VerticalContentAlignment="Center" x:Name="TxtItemName"/>
+
+                            <TextBlock FontSize="12" Margin="0,8,0,2" Text="Quantity:"/>
+                            <TextBox Height="28" VerticalContentAlignment="Center" x:Name="TxtQuantity"/>
+
+                            <TextBlock FontSize="12" Margin="0,8,0,2" Text="Min Stock Level:"/>
+                            <TextBox Height="28" VerticalContentAlignment="Center" x:Name="TxtMinLevel"/>
+
+                            <TextBlock FontSize="12" Margin="0,8,0,2" Text="Unit Price (Rs.):"/>
+                            <TextBox Height="28" VerticalContentAlignment="Center" x:Name="TxtPrice"/>
+
+                            <Button Background="#27AE60" Click="BtnAddItem_Click" Content="Add Item" FontWeight="Bold" Foreground="White" Height="32" Margin="0,15,0,5" x:Name="BtnAddItem"/>
+
+                            <Separator Margin="0,10"/>
+
+                            <TextBlock FontSize="13" FontWeight="Bold" Foreground="#34495E" Margin="0,5,0,5" Text="Data Import / Export (CSV)"/>
+                            <Button Background="#2980B9" Click="BtnImport_Click" Content="📥 Import from CSV" Foreground="White" Height="30" Margin="0,2,0,5" x:Name="BtnImport"/>
+                            <Button Background="#8E44AD" Click="BtnExport_Click" Content="📤 Export to CSV" Foreground="White" Height="30" Margin="0,2,0,0" x:Name="BtnExport"/>
+                        </StackPanel>
+                    </Border>
+
+                    <DataGrid AlternatingRowBackground="#F2F4F4" AutoGenerateColumns="False" BorderBrush="#BDC3C7" CanUserAddRows="False" Grid.Column="1" x:Name="DgvInventory">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding ItemID}" Header="Item ID" Width="60"/>
+                            <DataGridTextColumn Binding="{Binding ItemName}" Header="Item Name" Width="*"/>
+                            <DataGridTextColumn Binding="{Binding Quantity}" Header="Qty Available" Width="100"/>
+                            <DataGridTextColumn Binding="{Binding MinStockLevel}" Header="Min Level" Width="90"/>
+                            <DataGridTextColumn Binding="{Binding UnitPrice}" Header="Unit Price (Rs)" Width="100"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <TabItem FontSize="14" Header="🔧 Job Allocation &amp; Tracking" Padding="10,5">
+                <Grid Margin="10">
+                    <TextBlock Foreground="Gray" HorizontalAlignment="Center" Text="View Job Cards entered by Receptionist and assign Mechanics here." VerticalAlignment="Center"/>
+                </Grid>
+            </TabItem>
+
+        </TabControl>
     </Grid>
 </Page>
