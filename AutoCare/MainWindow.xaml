@@ -1,0 +1,253 @@
+﻿<Window x:Class="AutoCare.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="AutoCare Premier Service Suite v1.0" 
+        Height="650" Width="1200" 
+        WindowStartupLocation="CenterScreen"
+        Background="#F4F7F6">
+
+    <Window.Resources>
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="15" Color="#CCCCCC" Direction="270" ShadowDepth="3" Opacity="0.5"/>
+        <DropShadowEffect x:Key="IconShadow" BlurRadius="8" Color="#AAAAAA" Direction="270" ShadowDepth="2" Opacity="0.4"/>
+
+        <Style x:Key="RoleCard" TargetType="Border">
+            <Setter Property="Background" Value="#D6EAD7"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="BorderBrush" Value="#B4D9B6"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Margin" Value="12,10,12,20"/>
+            <Setter Property="Padding" Value="15,55,15,15"/>
+            <Setter Property="Effect" Value="{StaticResource CardShadow}"/>
+        </Style>
+
+        <Style x:Key="WorkspaceButton" TargetType="Button">
+            <Setter Property="Background" Value="#5CB85C"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#4CAE4C"/>
+                    <Setter Property="Cursor" Value="Hand"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden" Panel.ZIndex="10" Navigated="MainFrame_Navigated"/>
+
+        <Grid Panel.ZIndex="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="30"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Background="White" BorderBrush="#CBE3CE" BorderThickness="0,0,0,2" Padding="20,15">
+                <Grid>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0">
+                        <Border Width="60" Height="60" CornerRadius="30" Background="Transparent" VerticalAlignment="Center">
+                            <Image Source="logo.jpeg" Stretch="UniformToFill"/>
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel HorizontalAlignment="Center" TextBlock.TextAlignment="Center">
+                        <TextBlock Text="AutoCare Premier Service Suite" FontSize="28" FontWeight="Bold" Foreground="#1A1A1A"/>
+                        <TextBlock Text="VEHICLE SERVICE &amp; BUSINESS MANAGEMENT SYSTEM" FontSize="13" FontWeight="Bold" Foreground="#4A4A4A" Margin="0,4,0,2"/>
+                        <TextBlock Text="Wednesday, June 3, 2026" FontSize="12" Foreground="#666666" FontStyle="Italic"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1" Margin="20,40,20,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0">
+                    <Border Style="{StaticResource RoleCard}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="System Administrator" FontSize="18" FontWeight="Bold" Foreground="#111111" HorizontalAlignment="Center" Margin="0,10,0,2"/>
+                            <TextBlock Grid.Row="1" Text="User Management, Settings, DB Backup" FontSize="14" Foreground="#444444" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,15"/>
+
+                            <StackPanel Grid.Row="2" VerticalAlignment="Top" Margin="5,0">
+                                <StackPanel Orientation="Horizontal" Margin="0,6">
+                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Manage Users" FontSize="13" Foreground="#222222"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,6">
+                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="System Configuration" FontSize="13" Foreground="#222222"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,6">
+                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Data Backup &amp; Restore" FontSize="13" Foreground="#222222"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,6">
+                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Access Logs" FontSize="13" Foreground="#222222"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <Button Grid.Row="3" Content="Enter WorkSpace" Style="{StaticResource WorkspaceButton}" Click="BtnAdmin_Click"/>
+                        </Grid>
+                    </Border>
+                    <Ellipse Width="64" Height="64" Fill="White" Stroke="#B4D9B6" StrokeThickness="2" VerticalAlignment="Top" Margin="0,15,0,0" Effect="{StaticResource IconShadow}"/>
+                    <Image Source="https://cdn-icons-png.flaticon.com/512/2202/2202112.png" Width="45" Height="45" VerticalAlignment="Top" Margin="0,25,0,0"/>
+                </Grid>
+
+                <Grid Grid.Column="1">
+                    <Border Style="{StaticResource RoleCard}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="Receptionist" FontSize="18" FontWeight="Bold" Foreground="#111111" HorizontalAlignment="Center" Margin="0,10,0,2"/>
+                            <TextBlock Grid.Row="1" Text="Front Desk &amp; Customer Care" FontSize="14" Foreground="#444444" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,15"/>
+
+                            <StackPanel Grid.Row="2" VerticalAlignment="Top" Margin="5,0">
+                                <StackPanel Orientation="Horizontal" Margin="0,6">
+                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Register New Customer" FontSize="13" Foreground="#222222"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,6">
+                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Book Appointments" FontSize="13" Foreground="#222222"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,6">
+                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Create Job Cards" FontSize="13" Foreground="#222222"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,6">
+                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Service History" FontSize="13" Foreground="#222222"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <Button Grid.Row="3" Content="Enter Reception Desk" Style="{StaticResource WorkspaceButton}" Click="BtnReceptionist_Click"/>
+                        </Grid>
+                    </Border>
+                    <Ellipse Width="64" Height="64" Fill="White" Stroke="#B4D9B6" StrokeThickness="2" VerticalAlignment="Top" Margin="0,15,0,0" Effect="{StaticResource IconShadow}"/>
+                    <Image Source="https://cdn-icons-png.flaticon.com/512/6997/6997662.png" Width="45" Height="45" VerticalAlignment="Top" Margin="0,25,0,0"/>
+                </Grid>
+
+                <Grid Grid.Column="2">
+                    <Border Style="{StaticResource RoleCard}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="Service Manager" FontSize="18" FontWeight="Bold" Foreground="#111111" HorizontalAlignment="Center" Margin="0,10,0,2"/>
+                            <TextBlock Grid.Row="1" Text="Workflow &amp; Job Control" FontSize="14" Foreground="#444444" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,15"/>
+
+                            <StackPanel Grid.Row="2" VerticalAlignment="Top" Margin="5,0">
+                                <StackPanel Orientation="Horizontal" Margin="0,6">
+                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Assign Mechanic to Jobs" FontSize="13" Foreground="#222222"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,6">
+                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="View Job Status" FontSize="13" Foreground="#222222"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,6">
+                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Order Parts &amp; Inventory" FontSize="13" Foreground="#222222"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,6">
+                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Generate Service Reports" FontSize="13" Foreground="#222222"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <Button Grid.Row="3" Content="Enter WorkSpace" Style="{StaticResource WorkspaceButton}" Click="BtnServiceManager_Click"/>
+                        </Grid>
+                    </Border>
+                    <Ellipse Width="64" Height="64" Fill="White" Stroke="#B4D9B6" StrokeThickness="2" VerticalAlignment="Top" Margin="0,15,0,0" Effect="{StaticResource IconShadow}"/>
+                    <Image Source="https://cdn-icons-png.flaticon.com/512/3062/3062541.png" Width="41" Height="41" VerticalAlignment="Top" Margin="0,27,0,0"/>
+                </Grid>
+
+                <Grid Grid.Column="3">
+                    <Border Style="{StaticResource RoleCard}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="Cashier / Accountant" FontSize="18" FontWeight="Bold" Foreground="#111111" HorizontalAlignment="Center" Margin="0,10,0,2"/>
+                            <TextBlock Grid.Row="1" Text="Billing &amp; Payments" FontSize="14" Foreground="#444444" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,15"/>
+
+                            <StackPanel Grid.Row="2" VerticalAlignment="Top" Margin="5,0">
+                                <StackPanel Orientation="Horizontal" Margin="0,6">
+                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Create Customer Invoice" FontSize="13" Foreground="#222222"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,6">
+                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Process Payments" FontSize="13" Foreground="#222222"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,6">
+                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Daily Financial Summary" FontSize="13" Foreground="#222222"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,6">
+                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Print Invoices (PDF/Thermal)" FontSize="13" Foreground="#222222"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <Button Grid.Row="3" Content="Enter WorkSpace" Style="{StaticResource WorkspaceButton}" Click="BtnCashier_Click"/>
+                        </Grid>
+                    </Border>
+                    <Ellipse Width="64" Height="64" Fill="White" Stroke="#B4D9B6" StrokeThickness="2" VerticalAlignment="Top" Margin="0,15,0,0" Effect="{StaticResource IconShadow}"/>
+                    <Image Source="https://cdn-icons-png.flaticon.com/512/2489/2489756.png" Width="43" Height="43" VerticalAlignment="Top" Margin="0,26,0,0"/>
+                </Grid>
+            </Grid>
+
+            <StatusBar Grid.Row="2" Background="#EAEAEA" BorderBrush="#CCCCCC" BorderThickness="0,1,0,0">
+                <StatusBarItem Margin="5,0">
+                    <TextBlock Text="Database: Connected (Offline mode active)" FontSize="11.5" Foreground="#333333"/>
+                </StatusBarItem>
+                <Separator Background="#BBBBBB" Width="1" Margin="5,3"/>
+                <StatusBarItem>
+                    <TextBlock Text="Station: Counter 1" FontSize="11.5" Foreground="#333333"/>
+                </StatusBarItem>
+                <Separator Background="#BBBBBB" Width="1" Margin="5,3"/>
+                <StatusBarItem>
+                    <TextBlock Text="Server: Localhost" FontSize="11.5" Foreground="#333333"/>
+                </StatusBarItem>
+                <Separator Background="#BBBBBB" Width="1" Margin="5,3"/>
+                <StatusBarItem>
+                    <TextBlock Text="v1.0" FontSize="11.5" Foreground="#333333"/>
+                </StatusBarItem>
+            </StatusBar>
+        </Grid>
+    </Grid>
+</Window>
