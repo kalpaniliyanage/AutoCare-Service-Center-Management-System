@@ -93,7 +93,68 @@
 
             <TabItem FontSize="14" Header="🔧 Job Allocation &amp; Tracking" Padding="10,5">
                 <Grid Margin="10">
-                    <TextBlock Foreground="Gray" HorizontalAlignment="Center" Text="View Job Cards entered by Receptionist and assign Mechanics here." VerticalAlignment="Center"/>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="290"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- 1. වම් පැත්ත: Job Allocation Control Panel -->
+                    <Border Background="#FBFCFC" Grid.Column="0" Margin="0,0,10,0" Padding="15" BorderBrush="#BDC3C7" BorderThickness="1" CornerRadius="5">
+                        <StackPanel>
+                            <TextBlock FontSize="15" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,10" Text="Job Assignment Panel"/>
+
+                            <!-- තෝරාගත් Job එකේ ID එක පෙන්වන්න -->
+                            <TextBlock FontSize="11" Foreground="Gray" x:Name="LblSelectedJobID" Text="Selected Job ID: None" Margin="0,0,0,10"/>
+
+                            <!-- වාහන අංකය (Read Only) -->
+                            <TextBlock FontSize="12" Margin="0,5,0,2" Text="Vehicle Number:"/>
+                            <TextBox Height="28" VerticalContentAlignment="Center" x:Name="TxtJobVehicle" IsReadOnly="True" Background="#F4F6F6"/>
+
+                            <!-- ලෙඩේ විස්තරය (Read Only) -->
+                            <TextBlock FontSize="12" Margin="0,8,0,2" Text="Issue Description:"/>
+                            <TextBox Height="60" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" x:Name="TxtJobIssue" IsReadOnly="True" Background="#F4F6F6"/>
+
+                            <Separator Margin="0,15"/>
+
+                            <!-- Mechanic කෙනෙක්ව තෝරන කොටස -->
+                            <TextBlock FontSize="12" FontWeight="Bold" Margin="0,5,0,2" Text="Assign Mechanic:"/>
+                            <ComboBox Height="30" VerticalContentAlignment="Center" x:Name="CmbMechanics">
+                                <ComboBoxItem Content="Kamal Silva"/>
+                                <ComboBoxItem Content="Nimal Perera"/>
+                                <ComboBoxItem Content="Sunil Shantha"/>
+                                <ComboBoxItem Content="Ruwan Fernando"/>
+                            </ComboBox>
+
+                            <!-- Job Status එක තෝරන කොටස -->
+                            <TextBlock FontSize="12" FontWeight="Bold" Margin="0,10,0,2" Text="Job Status:"/>
+                            <ComboBox Height="30" VerticalContentAlignment="Center" x:Name="CmbStatus">
+                                <ComboBoxItem Content="Pending"/>
+                                <ComboBoxItem Content="In Progress"/>
+                                <ComboBoxItem Content="Completed"/>
+                            </ComboBox>
+
+                            <!-- Assign / Update Button -->
+                            <Button Background="#2980B9" Click="BtnAssignJob_Click" Content="💼 Assign &amp; Update Status" FontWeight="Bold" Foreground="White" Height="35" Margin="0,20,0,5" x:Name="BtnAssignJob"/>
+
+                            <!-- Reset Button -->
+                            <Button Background="#7F8C8D" Click="BtnClearJobForm_Click" Content="🔄 Clear Selection" Foreground="White" Height="28" Margin="0,5,0,0" x:Name="BtnClearJobForm"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 2. දකුණු පැත්ත: Job Cards පෙන්වන DataGrid එක -->
+                    <DataGrid AlternatingRowBackground="#F2F4F4" AutoGenerateColumns="False" BorderBrush="#BDC3C7" CanUserAddRows="False" Grid.Column="1" x:Name="DgvJobs" 
+                  MouseDoubleClick="DgvJobs_MouseDoubleClick" IsReadOnly="True" SelectionMode="Single">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding JobID}" Header="Job ID" Width="60"/>
+                            <DataGridTextColumn Binding="{Binding VehicleNumber}" Header="Vehicle No" Width="100"/>
+                            <DataGridTextColumn Binding="{Binding CustomerName}" Header="Customer Name" Width="120"/>
+                            <DataGridTextColumn Binding="{Binding IssueDescription}" Header="Issue Description" Width="*"/>
+                            <DataGridTextColumn Binding="{Binding AssignedMechanic}" Header="Assigned Mechanic" Width="130"/>
+
+                            <!-- Status එක වෙනස් පාට වලින් පෙන්වන්න පසුව පුළුවන්, දැනට Text එකක් විදිහට දාමු -->
+                            <DataGridTextColumn Binding="{Binding Status}" Header="Status" Width="100"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
                 </Grid>
             </TabItem>
 
