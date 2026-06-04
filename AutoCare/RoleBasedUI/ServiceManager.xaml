@@ -22,57 +22,72 @@
             </Grid>
         </Border>
 
-        <Border Background="#FADBD8" BorderBrush="#E74C3C" BorderThickness="2" CornerRadius="5" Grid.Row="1" Margin="15,10,15,5" Padding="10" Visibility="Collapsed" x:Name="LowStockAlertBorder">
+        <Border Background="#FADBD8" BorderBrush="#E74C3C" BorderThickness="2" CornerRadius="5" Grid.Row="1" Margin="15,10,15,5" Padding="10" Visibility="Collapsed" 
+                x:Name="LowStockAlertBorder" 
+                MouseDown="LowStockAlertBorder_MouseDown" 
+                Cursor="Hand">
             <StackPanel Orientation="Horizontal">
                 <TextBlock FontSize="14" FontWeight="Bold" Foreground="#C0392B" Text="⚠️ LOW STOCK ALERT: "/>
-                <TextBlock FontSize="14" Foreground="#C0392B" Text="Some spare parts are below the minimum stock level!" x:Name="TxtAlertMessage"/>
+                <TextBlock FontSize="14" Foreground="#C0392B" Text="Some spare parts are below the minimum stock level! (Click to filter)" x:Name="TxtAlertMessage"/>
             </StackPanel>
         </Border>
 
         <TabControl Background="White" Grid.Row="2" Margin="15,10,15,15">
-
             <TabItem FontSize="14" Header="📦 Inventory Control" Padding="10,5">
                 <Grid Margin="10">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="280"/>
+                        <ColumnDefinition Width="290"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <Border Background="#FBFCFC" Grid.Column="0" Margin="0,0,10,0" Padding="10">
-                        <StackPanel>
-                            <TextBlock FontSize="15" FontWeight="Bold" Foreground="#34495E" Margin="0,0,0,10" Text="Add New Item"/>
+                    <Border Background="#FBFCFC" Grid.Column="0" Margin="0,0,10,0" Padding="15" BorderBrush="#BDC3C7" BorderThickness="1" CornerRadius="5">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <TextBlock FontSize="15" FontWeight="Bold" Foreground="#34495E" Margin="0,0,0,10" Text="Inventory Control Panel"/>
 
-                            <TextBlock FontSize="12" Margin="0,5,0,2" Text="Item Name:"/>
-                            <TextBox Height="28" VerticalContentAlignment="Center" x:Name="TxtItemName"/>
+                                <TextBlock FontSize="11" Foreground="Gray" x:Name="LblSelectedID" Text="Selected ID: None" Margin="0,0,0,5"/>
 
-                            <TextBlock FontSize="12" Margin="0,8,0,2" Text="Quantity:"/>
-                            <TextBox Height="28" VerticalContentAlignment="Center" x:Name="TxtQuantity"/>
+                                <TextBlock FontSize="12" Margin="0,5,0,2" Text="Item Name:"/>
+                                <TextBox Height="28" VerticalContentAlignment="Center" x:Name="TxtItemName"/>
 
-                            <TextBlock FontSize="12" Margin="0,8,0,2" Text="Min Stock Level:"/>
-                            <TextBox Height="28" VerticalContentAlignment="Center" x:Name="TxtMinLevel"/>
+                                <TextBlock FontSize="12" Margin="0,8,0,2" Text="Quantity:"/>
+                                <TextBox Height="28" VerticalContentAlignment="Center" x:Name="TxtQuantity"/>
 
-                            <TextBlock FontSize="12" Margin="0,8,0,2" Text="Unit Price (Rs.):"/>
-                            <TextBox Height="28" VerticalContentAlignment="Center" x:Name="TxtPrice"/>
+                                <TextBlock FontSize="12" Margin="0,8,0,2" Text="Min Stock Level:"/>
+                                <TextBox Height="28" VerticalContentAlignment="Center" x:Name="TxtMinLevel"/>
 
-                            <Button Background="#27AE60" Click="BtnAddItem_Click" Content="Add Item" FontWeight="Bold" Foreground="White" Height="32" Margin="0,15,0,5" x:Name="BtnAddItem"/>
+                                <TextBlock FontSize="12" Margin="0,8,0,2" Text="Unit Price (Rs.):"/>
+                                <TextBox Height="28" VerticalContentAlignment="Center" x:Name="TxtPrice"/>
 
-                            <Separator Margin="0,10"/>
+                                <Button Background="#27AE60" Click="BtnAddItem_Click" Content="➕ Add Item" FontWeight="Bold" Foreground="White" Height="32" Margin="0,15,0,5" x:Name="BtnAddItem"/>
 
-                            <TextBlock FontSize="13" FontWeight="Bold" Foreground="#34495E" Margin="0,5,0,5" Text="Data Import / Export (CSV)"/>
-                            <Button Background="#2980B9" Click="BtnImport_Click" Content="📥 Import from CSV" Foreground="White" Height="30" Margin="0,2,0,5" x:Name="BtnImport"/>
-                            <Button Background="#8E44AD" Click="BtnExport_Click" Content="📤 Export to CSV" Foreground="White" Height="30" Margin="0,2,0,0" x:Name="BtnExport"/>
-                        </StackPanel>
+                                <UniformGrid Columns="2" Margin="0,2,0,5">
+                                    <Button Background="#E67E22" Click="BtnUpdateItem_Click" Content="📝 Update" FontWeight="Bold" Foreground="White" Height="32" Margin="0,0,2,0" x:Name="BtnUpdate"/>
+                                    <Button Background="#C0392B" Click="BtnDeleteItem_Click" Content="🗑️ Delete" FontWeight="Bold" Foreground="White" Height="32" Margin="2,0,0,0" x:Name="BtnDelete"/>
+                                </UniformGrid>
+
+                                <Button Background="#7F8C8D" Click="BtnClearForm_Click" Content="🔄 Clear / Reset" Foreground="White" Height="28" Margin="0,2,0,5" x:Name="BtnClear"/>
+
+                                <Separator Margin="0,15"/>
+
+                                <TextBlock FontSize="13" FontWeight="Bold" Foreground="#34495E" Margin="0,0,0,8" Text="Data Import / Export (CSV)"/>
+                                <Button Background="#2980B9" Click="BtnImport_Click" Content="📥 Import from CSV" FontWeight="Bold" Foreground="White" Height="32" Margin="0,0,0,6" x:Name="BtnImport"/>
+                                <Button Background="#8E44AD" Click="BtnExport_Click" Content="📤 Export to CSV" FontWeight="Bold" Foreground="White" Height="32" Margin="0,0,0,0" x:Name="BtnExport"/>
+                            </StackPanel>
+                        </ScrollViewer>
                     </Border>
 
-                    <DataGrid AlternatingRowBackground="#F2F4F4" AutoGenerateColumns="False" BorderBrush="#BDC3C7" CanUserAddRows="False" Grid.Column="1" x:Name="DgvInventory">
+                    <DataGrid AlternatingRowBackground="#F2F4F4" AutoGenerateColumns="False" BorderBrush="#BDC3C7" CanUserAddRows="False" Grid.Column="1" x:Name="DgvInventory" 
+                  MouseDoubleClick="DgvInventory_MouseDoubleClick" IsReadOnly="True" SelectionMode="Single">
                         <DataGrid.Columns>
                             <DataGridTextColumn Binding="{Binding ItemID}" Header="Item ID" Width="60"/>
                             <DataGridTextColumn Binding="{Binding ItemName}" Header="Item Name" Width="*"/>
                             <DataGridTextColumn Binding="{Binding Quantity}" Header="Qty Available" Width="100"/>
                             <DataGridTextColumn Binding="{Binding MinStockLevel}" Header="Min Level" Width="90"/>
-                            <DataGridTextColumn Binding="{Binding UnitPrice}" Header="Unit Price (Rs)" Width="100"/>
+                            <DataGridTextColumn Binding="{Binding UnitPrice}" Header="Unit Price (Rs)" Width="120"/>
                         </DataGrid.Columns>
                     </DataGrid>
+
                 </Grid>
             </TabItem>
 

@@ -11,6 +11,5 @@ namespace AutoCare.Models
         public int Quantity { get; set; }
         public int MinStockLevel { get; set; }
         public decimal UnitPrice { get; set; }
-        public bool IsLowStock => Quantity <= MinStockLevel;
     }
 }
