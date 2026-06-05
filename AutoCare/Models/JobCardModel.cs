@@ -10,7 +10,7 @@ namespace AutoCare.Models
         public string VehicleNo { get; set; }
         public string ServiceName { get; set; }
         public string MechanicName { get; set; }
-        public string DateReceived { get; set; }
+        public DateTime DateReceived { get; set; }
         public string JobStatus { get; set; } // Pending, Ongoing, Completed
     }
 }

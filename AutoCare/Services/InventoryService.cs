@@ -1,13 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using AutoCare.Models;
+﻿using AutoCare.Models;
 using Microsoft.Data.Sqlite;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Windows;
 
 namespace AutoCare.Services
 {
     public class InventoryService
     {
+        public bool DeleteItem(int itemId)
+        {
+            using (var connection = DatabaseHelper.GetConnection())
+            {
+                string query = "DELETE FROM Inventory WHERE ItemID = @ID;";
+                using (var command = new SqliteCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@ID", itemId);
+                    return command.ExecuteNonQuery() > 0;
+                }
+            }
+        }
         // 1. Database එකේ තියෙන ඔක්කොම Inventory Items ටික අරන් එන ක්‍රමය
         public List<InventoryItem> GetAllItems()
         {
@@ -82,22 +95,7 @@ namespace AutoCare.Services
         }
 
         // 4. Item එකක් Delete කිරීමේ ක්‍රමය
-        public bool DeleteItem(int itemId)
-        {
-            using (var connection = DatabaseHelper.GetConnection())
-            {
-                string query = "DELETE FROM Inventory WHERE ItemID = @ItemID;";
-
-                using (var command = new SqliteCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue("@ItemID", itemId);
-
-                    int rowsAffected = command.ExecuteNonQuery();
-                    return rowsAffected > 0;
-                }
-            }
-        }
-
+        
         // 5. මුළු Inventory එකම CSV පේළි පෙළක් (String List) ලෙස ලබා දෙන ක්‍රමය (Export සඳහා)
         public List<string> ExportToCsv()
         {

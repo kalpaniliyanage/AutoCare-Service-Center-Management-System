@@ -7,6 +7,55 @@ namespace AutoCare.Services
 {
     public class JobService
     {
+        // 3. Chart එක සඳහා Status අනුව ජොබ් ප්‍රමාණයන් ගණන් කරගෙන එන ක්‍රමය
+        public Dictionary<string, int> GetJobStatusCounts()
+        {
+            var counts = new Dictionary<string, int>
+    {
+        { "Pending", 0 },
+        { "Ongoing", 0 },
+        { "Completed", 0 }
+    };
+
+            try
+            {
+                using (var connection = DatabaseHelper.GetConnection())
+                {
+                    // 💡 නිවැරදි SQLite Column Name එක වන JobStatus පමණක් මෙහිදී සමූහගත (Group) කර ගණන් ගනු ලබයි
+                    string query = "SELECT JobStatus, COUNT(*) FROM JobCards GROUP BY JobStatus;";
+
+                    using (var command = new SqliteCommand(query, connection))
+                    {
+                        using (var reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                if (!reader.IsDBNull(0))
+                                {
+                                    string status = reader.GetString(0).Trim();
+
+                                    // ඩේටාබේස් එකේ "In Progress" කියලා තිබුණොත් ඒක "Ongoing" විදිහට එකතු කරනවා
+                                    if (status == "In Progress") status = "Ongoing";
+
+                                    if (counts.ContainsKey(status))
+                                    {
+                                        counts[status] = reader.GetInt32(1);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // කිසියම් හේතුවකින් ඩේටාබේස් එක වැඩ නොකළහොත් ඇප් එක ක්‍රැෂ් නොවී හිස් අගයන් ලබාදේ
+                return counts;
+            }
+
+            return counts;
+        }
+
         // 1. දැනට පද්ධතියේ තියෙන ඔක්කොම Job Cards ටික අරන් එන ක්‍රමය
         public List<JobCard> GetAllJobs()
         {
@@ -89,5 +138,67 @@ namespace AutoCare.Services
                 }
             }
         }
+        // සේවකයන්ගේ නම් Database එකෙන් ලබා ගැනීමේ ක්‍රමය
+        public List<string> GetAllMechanicNames()
+        {
+            List<string> mechanicNames = new List<string>();
+
+            using (var connection = DatabaseHelper.GetConnection())
+            {
+                // JobCards වගුවේ ඇති MechanicName තීරුවෙන් ප복ිත නම් (Duplicates නැතිව) ලබා ගනී
+                string query = "SELECT DISTINCT MechanicName FROM JobCards WHERE MechanicName IS NOT NULL AND MechanicName != '';";
+
+                using (var command = new SqliteCommand(query, connection))
+                {
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            mechanicNames.Add(reader.GetString(0));
+                        }
+                    }
+                }
+            }
+            return mechanicNames;
+        }
+
+        public List<JobCard> GetServiceReportsByMonth(int month, int year)
+        {
+            var reports = new List<JobCard>();
+            using (var connection = DatabaseHelper.GetConnection())
+            {
+                // We use the same format for the parameter as the database (YYYY-MM-DD)
+                // Ensure month is 2 digits (e.g., '06')
+                string monthStr = month.ToString("D2");
+                string yearStr = year.ToString();
+
+                // Query looks for the pattern YYYY-MM
+                string query = "SELECT JobCardID, VehicleNo, MechanicName, JobStatus, DateReceived FROM JobCards " +
+                               "WHERE strftime('%m', DateReceived) = @Month AND strftime('%Y', DateReceived) = @Year;";
+
+                using (var command = new SqliteCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Month", monthStr);
+                    command.Parameters.AddWithValue("@Year", yearStr);
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            reports.Add(new JobCard
+                            {
+                                JobID = reader.GetInt32(0),
+                                VehicleNumber = reader.IsDBNull(1) ? "Unknown" : reader.GetString(1),
+                                AssignedMechanic = reader.IsDBNull(2) ? "Not Assigned" : reader.GetString(2),
+                                Status = reader.IsDBNull(3) ? "Pending" : reader.GetString(3),
+                                CreatedDate = DateTime.TryParse(reader.GetString(4), out DateTime dt) ? dt : DateTime.Now
+                            });
+                        }
+                    }
+                }
+            }
+            return reports;
+        }
+
     }
 }
