@@ -94,9 +94,42 @@ namespace AutoCare
                     command.ExecuteNonQuery();
                 }
 
+                try
+                {
+                    // Inspect the internal table columns of the active SQLite file
+                    using (var checkCmd = new SqliteCommand("PRAGMA table_info(Vehicles);", connection))
+                    using (var reader = checkCmd.ExecuteReader())
+                    {
+                        bool hasYear = false;
+                        while (reader.Read())
+                        {
+                            // Check if a column named 'Year' is already in the table configuration
+                            if (reader["name"].ToString() == "Year")
+                            {
+                                hasYear = true;
+                            }
+                        }
+                        reader.Close();
+
+                        // If 'Year' is not found, dynamically execute the ALTER TABLE query
+                        if (!hasYear)
+                        {
+                            using (var alterCmd = new SqliteCommand("ALTER TABLE Vehicles ADD COLUMN Year TEXT;", connection))
+                            {
+                                alterCmd.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    // Fail silently if structural update verification drops or checks match
+                }
+
                 // ටේබල් හිස් නම් පමණක් පේළි 50ක ව්‍යාජ දත්ත ඇතුළත් කිරීම සිදු කරයි
                 InsertFakeDataIfEmpty(connection);
             }
+
         }
 
         public static SqliteConnection GetConnection()
