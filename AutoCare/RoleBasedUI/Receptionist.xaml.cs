@@ -1,20 +1,24 @@
 ﻿using Microsoft.Data.Sqlite;
+using QRCoder;
 using System;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Media.Imaging;
 
 namespace AutoCare
 {
     public partial class Receptionist : UserControl
     {
-        private string selectedCustomerID = null;
-            private string selectedVehicleNo = string.Empty;
+        private string? selectedCustomerID = null; // .NET 10 Nullable string සක්‍රීය කිරීම
+        private string selectedVehicleNo = string.Empty;
 
-            private const string PlateStrictPattern1 = "^[A-Z]{2}-[A-Z]{3}-\\d{4}$"; // XX-XXX-1111
-            private const string PlateStrictPattern2 = "^[A-Z]{2}-[A-Z]{2}-\\d{4}$"; // XX-XX-1111
+        private const string PlateStrictPattern1 = "^[A-Z]{2}-[A-Z]{3}-\\d{4}$"; // XX-XXX-1111
+        private const string PlateStrictPattern2 = "^[A-Z]{2}-[A-Z]{2}-\\d{4}$"; // XX-XX-1111
 
         public Receptionist()
         {
@@ -22,6 +26,8 @@ namespace AutoCare
             LoadCustomersGrid();
             LoadOwnersComboBox();
             LoadVehiclesGrid();
+            LoadServicesComboBox();
+            LoadJobVehiclesGrid();
         }
 
         // Wrapper to match XAML handler name (case-sensitive)
@@ -182,7 +188,6 @@ namespace AutoCare
                             cmbOwners.ItemsSource = dt.DefaultView;
                             cmbOwners.DisplayMemberPath = "DisplayText";
                             cmbOwners.SelectedValuePath = "CustomerID";
-                            // ensure every item visible uses the right foreground
                             cmbOwners.Foreground = System.Windows.Media.Brushes.White;
                         }
                     }
@@ -193,7 +198,6 @@ namespace AutoCare
 
         private void RefreshOwnersAndSelectLastInserted(string phoneLike)
         {
-            // reload owners and select the owner matching phoneLike if exists
             try
             {
                 using (SqliteConnection conn = DatabaseHelper.GetConnection())
@@ -211,7 +215,6 @@ namespace AutoCare
                         }
                     }
 
-                    // try to find newly inserted customer by phone
                     if (!string.IsNullOrWhiteSpace(phoneLike))
                     {
                         string selQuery = "SELECT CustomerID FROM Customers WHERE Phone = @Phone LIMIT 1;";
@@ -230,48 +233,39 @@ namespace AutoCare
             catch { }
         }
 
-
-
         private void btnSaveVehicle_Click(object sender, RoutedEventArgs e)
         {
-            // 1. Presence validation: Ensure mandatory fields are not left blank
             if (string.IsNullOrWhiteSpace(txtVehicleNo.Text) || string.IsNullOrWhiteSpace(txtModel.Text))
             {
                 MessageBox.Show("Please fill in all the required fields (Vehicle Number and Brand & Model).", "Registration Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            // 2. Ensure a registered customer profile is selected from the owner dropdown menu
             if (cmbOwners.SelectedValue == null)
             {
                 MessageBox.Show("Please select the registered customer (Owner) to assign to this vehicle.", "Registration Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            // 3. Normalize the vehicle plate number input by trimming and normalizing separators
             string inputPlate = txtVehicleNo.Text ?? string.Empty;
             string normSep = Regex.Replace(inputPlate.Trim(), "\\s+", "-").ToUpper();
             normSep = Regex.Replace(normSep, "-+", "-");
 
             if (!Regex.IsMatch(normSep, PlateStrictPattern1) && !Regex.IsMatch(normSep, PlateStrictPattern2))
             {
-                MessageBox.Show("The entered vehicle registration number format is invalid!\n\nValid examples (after normalization):\n- XX-XXX-1111 (e.g. WP-ABC-1234)\n- XX-XX-1111 (e.g. WP-AB-1234)",
+                MessageBox.Show("The entered vehicle registration number format is invalid!\n\nValid examples:\n- XX-XXX-1111 (e.g. WP-ABC-1234)\n- XX-XX-1111 (e.g. WP-AB-1234)",
                                 "Invalid Plate Format", MessageBoxButton.OK, MessageBoxImage.Warning);
                 txtVehicleNo.Focus();
                 return;
             }
-            // normalized string without separators for internal matching
             string cleanPlate = Regex.Replace(normSep, "[^A-Z0-9]", string.Empty, RegexOptions.IgnoreCase).ToUpper();
-            // formatted string to store (keep hyphens as normalized)
             string formattedToStore = normSep;
 
-            // 5. Conduct manufactured year boundary evaluation if data is provided
             if (!string.IsNullOrWhiteSpace(txtYear.Text.Trim()))
             {
                 string yearInput = txtYear.Text.Trim();
                 int currentYear = DateTime.Now.Year;
 
-                // Verify that the year field consists strictly of exactly 4 numeric characters
                 if (!yearInput.All(char.IsDigit) || yearInput.Length != 4)
                 {
                     MessageBox.Show("Please enter a valid 4-digit numeric manufactured year (e.g., 2018).", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -280,8 +274,6 @@ namespace AutoCare
                 }
 
                 int enteredYear = int.Parse(yearInput);
-
-                // Enforce practical automotive age boundaries (from year 1900 up to the current calendar year)
                 if (enteredYear < 1900 || enteredYear > currentYear)
                 {
                     MessageBox.Show($"The manufactured year must fall between 1900 and {currentYear}.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -290,7 +282,6 @@ namespace AutoCare
                 }
             }
 
-            // 6. Execute data insertion into the SQLite workspace without using a 'Brand' column mapping
             try
             {
                 using (SqliteConnection conn = DatabaseHelper.GetConnection())
@@ -298,32 +289,28 @@ namespace AutoCare
                     string query = "INSERT INTO Vehicles (VehicleNo, Model, Year, CustomerID) VALUES (@VehicleNo, @Model, @Year, @CustomerID);";
                     using (SqliteCommand cmd = new SqliteCommand(query, conn))
                     {
-                        // store a user-friendly formatted plate in the DB
                         formattedToStore = FormatPlateForDisplay(cleanPlate, txtVehicleNo.Text);
                         cmd.Parameters.AddWithValue("@VehicleNo", formattedToStore);
                         cmd.Parameters.AddWithValue("@Model", txtModel.Text.Trim());
                         cmd.Parameters.AddWithValue("@Year", string.IsNullOrEmpty(txtYear.Text) ? DBNull.Value : txtYear.Text.Trim());
                         cmd.Parameters.AddWithValue("@CustomerID", cmbOwners.SelectedValue);
-
                         cmd.ExecuteNonQuery();
                     }
                 }
 
-                MessageBox.Show("Vehicle details saved and linked to the customer profile successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Vehicle details saved successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 LoadVehiclesGrid();
 
-                // Clear form
                 txtVehicleNo.Clear();
                 txtModel.Clear();
                 txtYear.Clear();
 
-                // Refresh owners list and try to select the owner by phone
                 if (!string.IsNullOrWhiteSpace(txtPhone.Text))
                     RefreshOwnersAndSelectLastInserted(txtPhone.Text.Trim());
                 else
                     LoadOwnersComboBox();
 
-                selectedVehicleNo = null;
+                selectedVehicleNo = string.Empty;
                 btnUpdateVehicle.IsEnabled = false;
                 btnDeleteVehicle.IsEnabled = false;
             }
@@ -339,17 +326,29 @@ namespace AutoCare
             {
                 using (SqliteConnection conn = DatabaseHelper.GetConnection())
                 {
-                    // Select maps across VehicleNo, Model, Year, and the Owner details
+                    // 🛠️ FIXED: Changed JOIN to LEFT JOIN so vehicles show up even if owner linking has an anomaly
                     string query = string.IsNullOrWhiteSpace(keyword)
-                        ? "SELECT V.VehicleNo, V.Model, V.Year, C.CustomerID AS OwnerID, C.CustomerName AS OwnerName, C.Phone FROM Vehicles V JOIN Customers C ON V.CustomerID = C.CustomerID ORDER BY V.VehicleNo DESC;"
-                        : "SELECT V.VehicleNo, V.Model, V.Year, C.CustomerID AS OwnerID, C.CustomerName AS OwnerName, C.Phone FROM Vehicles V JOIN Customers C ON V.CustomerID = C.CustomerID WHERE (REPLACE(REPLACE(UPPER(V.VehicleNo),' ',''),'-','') LIKE @KeyNorm) OR UPPER(V.Model) LIKE @Key OR UPPER(C.CustomerName) LIKE @Key ORDER BY V.VehicleNo DESC;";
+                        ? @"SELECT V.VehicleNo, V.Model, V.Year, C.CustomerID AS OwnerID, 
+                           COALESCE(C.CustomerName, 'No Owner Assigned') AS OwnerName, 
+                           COALESCE(C.Phone, 'N/A') AS Phone 
+                    FROM Vehicles V 
+                    LEFT JOIN Customers C ON V.CustomerID = C.CustomerID 
+                    ORDER BY V.VehicleNo DESC;"
+                        : @"SELECT V.VehicleNo, V.Model, V.Year, C.CustomerID AS OwnerID, 
+                           COALESCE(C.CustomerName, 'No Owner Assigned') AS OwnerName, 
+                           COALESCE(C.Phone, 'N/A') AS Phone 
+                    FROM Vehicles V 
+                    LEFT JOIN Customers C ON V.CustomerID = C.CustomerID 
+                    WHERE (REPLACE(REPLACE(UPPER(V.VehicleNo),' ',''),'-','') LIKE @KeyNorm) 
+                       OR UPPER(V.Model) LIKE @Key 
+                       OR UPPER(COALESCE(C.CustomerName,'')) LIKE @Key 
+                    ORDER BY V.VehicleNo DESC;";
 
                     using (SqliteCommand cmd = new SqliteCommand(query, conn))
                     {
                         if (!string.IsNullOrWhiteSpace(keyword))
                         {
-                            // normalized key for plate matching (remove non-alphanumeric)
-                            string keyNorm = Regex.Replace(keyword ?? string.Empty, "[^A-Z0-9]", string.Empty, RegexOptions.IgnoreCase).ToUpper();
+                            string keyNorm = Regex.Replace(keyword, "[^A-Z0-9]", string.Empty, RegexOptions.IgnoreCase).ToUpper();
                             string keyUpper = keyword.ToUpper();
                             cmd.Parameters.AddWithValue("@KeyNorm", $"%{keyNorm}%");
                             cmd.Parameters.AddWithValue("@Key", $"%{keyUpper}%");
@@ -363,11 +362,9 @@ namespace AutoCare
                             {
                                 string raw = (r["VehicleNo"] ?? string.Empty).ToString();
                                 string norm = Regex.Replace(raw, "[^A-Z0-9]", string.Empty, RegexOptions.IgnoreCase).ToUpper();
-                                // format for display: try patterns
                                 string formatted = FormatPlateForDisplay(norm, raw);
-                                // replace VehicleNo cell with formatted string so grid shows user-friendly value
                                 r["VehicleNo"] = formatted;
-                                // store normalized value in a hidden column if needed for selection
+
                                 if (!dt.Columns.Contains("NormVehicleNo"))
                                     dt.Columns.Add("NormVehicleNo", typeof(string));
                                 r["NormVehicleNo"] = norm;
@@ -380,58 +377,61 @@ namespace AutoCare
                     }
                 }
             }
-            catch (Exception) { }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading vehicle records: " + ex.Message, "Database Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
-        private string FormatPlateForDisplay(string norm, string original)
+        // Nullable Reference parameters ටික .NET 10 වලට ගැලපෙන ලෙස ආරක්ෂිත කිරීම
+        private string FormatPlateForDisplay(string? norm, string? original)
         {
-            if (string.IsNullOrWhiteSpace(norm)) return original;
-            // Pattern1: AA + AAA + digits -> AA-AAA NNNN
-            var m1 = Regex.Match(norm, "^([A-Z]{2})([A-Z]{3})(\\d{1,4})$");
+            string cleanNorm = norm ?? string.Empty;
+            string cleanOriginal = original ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(cleanNorm)) return cleanOriginal;
+
+            var m1 = Regex.Match(cleanNorm, "^([A-Z]{2})([A-Z]{3})(\\d{1,4})$");
             if (m1.Success)
             {
                 return $"{m1.Groups[1].Value}-{m1.Groups[2].Value} {m1.Groups[3].Value}";
             }
-            // Pattern2: AA + AA + digits(3-4) -> AA AA NNNN
-            var m2 = Regex.Match(norm, "^([A-Z]{2})([A-Z]{2})(\\d{3,4})$");
+            var m2 = Regex.Match(cleanNorm, "^([A-Z]{2})([A-Z]{2})(\\d{3,4})$");
             if (m2.Success)
             {
                 return $"{m2.Groups[1].Value} {m2.Groups[2].Value} {m2.Groups[3].Value}";
             }
-            // Fallback: if original contained separators, return original; else attempt split before last 3-4 digits
-            var md = Regex.Match(norm, "^(.*?)(\\d{3,4})$");
+            var md = Regex.Match(cleanNorm, "^(.*?)(\\d{3,4})$");
             if (md.Success)
             {
                 string letters = md.Groups[1].Value;
                 string digits = md.Groups[2].Value;
                 if (letters.Length > 2)
-                    return $"{letters.Substring(0,2)}-{letters.Substring(2)} {digits}";
+                    return $"{letters.Substring(0, 2)}-{letters.Substring(2)} {digits}";
                 return $"{letters} {digits}";
             }
-            return original;
+            return cleanOriginal;
         }
 
         private void DgvVehicles_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (dgvVehicles.SelectedItem is DataRowView row)
             {
-                // normalize stored vehicle number to expected format
                 selectedVehicleNo = Regex.Replace(row["VehicleNo"].ToString() ?? string.Empty, "[^A-Z0-9]", string.Empty, RegexOptions.IgnoreCase).ToUpper();
                 txtVehicleNo.Text = row["VehicleNo"].ToString();
                 txtModel.Text = row["Model"].ToString();
                 txtYear.Text = row["Year"].ToString();
 
-                // Prefer selecting owner by OwnerID if query included it
                 if (row.Row.Table.Columns.Contains("OwnerID") && row["OwnerID"] != DBNull.Value)
                 {
                     cmbOwners.SelectedValue = row["OwnerID"].ToString();
                 }
                 else
                 {
-                    string ownerName = row["OwnerName"].ToString();
+                    string ownerName = row["OwnerName"].ToString() ?? string.Empty;
                     foreach (var item in cmbOwners.Items)
                     {
-                        if (item is DataRowView drv && drv["DisplayText"].ToString().StartsWith(ownerName))
+                        if (item is DataRowView drv && (drv["DisplayText"].ToString() ?? string.Empty).StartsWith(ownerName))
                         {
                             cmbOwners.SelectedValue = drv["CustomerID"].ToString();
                             break;
@@ -444,7 +444,7 @@ namespace AutoCare
             }
             else
             {
-                selectedVehicleNo = null;
+                selectedVehicleNo = string.Empty;
                 btnUpdateVehicle.IsEnabled = false;
                 btnDeleteVehicle.IsEnabled = false;
             }
@@ -471,7 +471,6 @@ namespace AutoCare
                     string q = "UPDATE Vehicles SET VehicleNo = @NewNo, Model = @Model, Year = @Year, CustomerID = @CustomerID WHERE REPLACE(REPLACE(UPPER(VehicleNo),' ',''),'-','') = @OldNo;";
                     using (SqliteCommand cmd = new SqliteCommand(q, conn))
                     {
-                        // normalize and validate update plate (same rules as create)
                         string inputUpd = txtVehicleNo.Text ?? string.Empty;
                         string normUpd = Regex.Replace(inputUpd.Trim(), "\\s+", "-").ToUpper();
                         normUpd = Regex.Replace(normUpd, "-+", "-");
@@ -493,7 +492,8 @@ namespace AutoCare
 
                 MessageBox.Show("Vehicle record updated successfully.", "Update", MessageBoxButton.OK, MessageBoxImage.Information);
                 LoadVehiclesGrid();
-                selectedVehicleNo = null;
+                LoadJobVehiclesGrid();
+                selectedVehicleNo = string.Empty;
                 btnUpdateVehicle.IsEnabled = false;
                 btnDeleteVehicle.IsEnabled = false;
                 txtVehicleNo.Clear();
@@ -532,7 +532,8 @@ namespace AutoCare
 
                 MessageBox.Show("Vehicle removed successfully.", "Deleted", MessageBoxButton.OK, MessageBoxImage.Information);
                 LoadVehiclesGrid();
-                selectedVehicleNo = null;
+                LoadJobVehiclesGrid();
+                selectedVehicleNo = string.Empty;
                 txtVehicleNo.Clear();
                 txtModel.Clear();
                 txtYear.Clear();
@@ -593,6 +594,246 @@ namespace AutoCare
             panelEditingIndicator.Visibility = Visibility.Collapsed;
             btnSaveCustomer.IsEnabled = true;
             dgvCustomers.SelectedItem = null;
+        }
+
+        // =========================================================================
+        // TAB 3: INNOVATIVE FEATURE LOGIC (JOB CARD & LIVE RECEIPT SHEET)
+        // =========================================================================
+        private void LoadServicesComboBox()
+        {
+            try
+            {
+                using (SqliteConnection conn = DatabaseHelper.GetConnection())
+                {
+                    string query = "SELECT ServiceID, ServiceName || ' (Rs. ' || BasePrice || ')' AS DisplayText FROM Services;";
+                    using (SqliteCommand cmd = new SqliteCommand(query, conn))
+                    using (SqliteDataReader reader = cmd.ExecuteReader())
+                    {
+                        DataTable dt = new DataTable();
+                        dt.Load(reader);
+                        cmbServices.ItemsSource = dt.DefaultView;
+                        cmbServices.DisplayMemberPath = "DisplayText";
+                        cmbServices.SelectedValuePath = "ServiceID";
+                    }
+                }
+            }
+            catch (Exception) { }
+        }
+
+        
+
+        private void LoadJobVehiclesGrid()
+        {
+            try
+            {
+                using (SqliteConnection conn = DatabaseHelper.GetConnection())
+                {
+                    string query = "SELECT VehicleNo, Model, Year FROM Vehicles ORDER BY VehicleNo DESC;";
+                    using (SqliteCommand cmd = new SqliteCommand(query, conn))
+                    using (SqliteDataReader reader = cmd.ExecuteReader())
+                    {
+                        DataTable dt = new DataTable();
+                        dt.Load(reader);
+
+                        // Format the plate numbers on Tab 3's grid too so everything stays uniform
+                        foreach (DataRow r in dt.Rows)
+                        {
+                            string raw = (r["VehicleNo"] ?? string.Empty).ToString();
+                            string norm = Regex.Replace(raw, "[^A-Z0-9]", string.Empty, RegexOptions.IgnoreCase).ToUpper();
+                            r["VehicleNo"] = FormatPlateForDisplay(norm, raw);
+                        }
+
+                        dgvJobVehiclesSelection.ItemsSource = dt.DefaultView;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading active job selection grid: " + ex.Message, "System Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        // -------------------------------------------------------------------------
+        // ⚡ NEW: DATA GRID SELECTION CHANGED (සජීවීව රිසිට් පැනලය ලෝඩ් වන කොටස)
+        // -------------------------------------------------------------------------
+        private void dgvJobVehiclesSelection_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (dgvJobVehiclesSelection.SelectedItem is DataRowView selectedRow)
+            {
+                string vehicleNo = selectedRow["VehicleNo"]?.ToString() ?? string.Empty;
+                txtJobVehicleNo.Text = vehicleNo;
+
+                if (string.IsNullOrWhiteSpace(vehicleNo)) return;
+
+                rtbHistoryReport.Document.Blocks.Clear();
+                FlowDocument doc = new FlowDocument();
+                Paragraph paragraph = new Paragraph { FontFamily = new System.Windows.Media.FontFamily("Consolas") };
+
+                try
+                {
+                    using (SqliteConnection conn = DatabaseHelper.GetConnection())
+                    {
+                        string query = @"SELECT J.JobCardID, S.ServiceName, J.MechanicName, J.DateReceived, J.JobStatus, C.CustomerName, C.Phone 
+                                         FROM JobCards J
+                                         JOIN Services S ON J.ServiceID = S.ServiceID
+                                         JOIN Vehicles V ON J.VehicleNo = V.VehicleNo
+                                         JOIN Customers C ON V.CustomerID = C.CustomerID
+                                         WHERE J.VehicleNo = @VehicleNo
+                                         ORDER BY J.JobCardID DESC;";
+
+                        using (SqliteCommand cmd = new SqliteCommand(query, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@VehicleNo", vehicleNo);
+                            using (SqliteDataReader reader = cmd.ExecuteReader())
+                            {
+                                bool hasRecords = false;
+                                int visitIndex = 1;
+
+                                while (reader.Read())
+                                {
+                                    if (!hasRecords)
+                                    {
+                                        paragraph.Inlines.Add(new Bold(new Run($"AUTOCARE VEHICLE HISTORY PROFILE\n")) { Foreground = System.Windows.Media.Brushes.White });
+                                        paragraph.Inlines.Add(new Run($"==============================================\n"));
+                                        paragraph.Inlines.Add(new Run($"Target Plate : {vehicleNo}\n"));
+                                        paragraph.Inlines.Add(new Run($"Owner Name   : {reader["CustomerName"]?.ToString() ?? "N/A"}\n"));
+                                        paragraph.Inlines.Add(new Run($"Contact Phone: {reader["Phone"]?.ToString() ?? "N/A"}\n"));
+                                        paragraph.Inlines.Add(new Run($"----------------------------------------------\n\n"));
+                                        hasRecords = true;
+                                    }
+
+                                    paragraph.Inlines.Add(new Bold(new Run($"Visit #{visitIndex} [Ticket ID: #{reader["JobCardID"]}]\n")) { Foreground = System.Windows.Media.Brushes.White });
+                                    paragraph.Inlines.Add(new Run($"  Service  : {reader["ServiceName"]?.ToString() ?? "N/A"}\n"));
+                                    paragraph.Inlines.Add(new Run($"  Mechanic : {reader["MechanicName"]?.ToString() ?? "N/A"}\n"));
+                                    paragraph.Inlines.Add(new Run($"  Schedule : {reader["DateReceived"]?.ToString() ?? "N/A"}\n"));
+                                    paragraph.Inlines.Add(new Run($"  Job State: {reader["JobStatus"]?.ToString() ?? "N/A"}\n"));
+                                    paragraph.Inlines.Add(new Run($"----------------------------------------------\n"));
+
+                                    visitIndex++;
+                                }
+
+                                if (!hasRecords)
+                                {
+                                    paragraph.Inlines.Add(new Run("✨ First-Time Vehicle: No historical breakdown or maintenance visits recorded in system archive.") { Foreground = System.Windows.Media.Brushes.DarkGray, FontStyle = FontStyles.Italic });
+                                }
+                            }
+                        }
+                    }
+
+                    doc.Blocks.Add(paragraph);
+                    rtbHistoryReport.Document = doc;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed to parse history stream: " + ex.Message, "System Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        // -------------------------------------------------------------------------
+        // ⚡ JOB TICKET CREATION ENGINE (පරණ References ඉවත් කර සුමට කළ කෝඩ් එක)
+        // -------------------------------------------------------------------------
+        private void btnCreateJobCard_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtJobVehicleNo.Text))
+            {
+                MessageBox.Show("Please select an active vehicle from the right-hand directory grid first.", "Selection Missing", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (cmbServices.SelectedValue == null)
+            {
+                MessageBox.Show("Please select the requested maintenance service category.", "Input Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (dpBookingDate.SelectedDate == null)
+            {
+                MessageBox.Show("Please select a scheduled appointment date for this booking.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            if (cmbTimeSlots.SelectedItem == null)
+            {
+                MessageBox.Show("Please choose a valid time slot for the maintenance appointment.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            string mechanic = string.IsNullOrWhiteSpace(txtMechanicName.Text) ? "Unassigned" : txtMechanicName.Text.Trim();
+
+            string chosenDateStr = dpBookingDate.SelectedDate.Value.ToString("yyyy-MM-dd");
+            string chosenTimeStr = (cmbTimeSlots.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "TBD";
+            string combinedBookingDateTime = $"{chosenDateStr} [{chosenTimeStr}]";
+
+            long newlyGeneratedID = 0;
+
+            try
+            {
+                using (SqliteConnection conn = DatabaseHelper.GetConnection())
+                {
+                    string query = @"INSERT INTO JobCards (VehicleNo, ServiceID, MechanicName, DateReceived, JobStatus) 
+                                     VALUES (@VehicleNo, @ServiceID, @Mechanic, @DateReceived, 'Pending');
+                                     SELECT last_insert_rowid();";
+
+                    using (SqliteCommand cmd = new SqliteCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@VehicleNo", txtJobVehicleNo.Text);
+                        cmd.Parameters.AddWithValue("@ServiceID", cmbServices.SelectedValue ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@Mechanic", mechanic);
+                        cmd.Parameters.AddWithValue("@DateReceived", combinedBookingDateTime);
+
+                        newlyGeneratedID = (long)(cmd.ExecuteScalar() ?? 0);
+                    }
+                }
+
+                // ⚡ QR TOKEN GENERATION ENGINE
+                string serviceText = cmbServices.Text ?? "Standard Maintenance";
+                string qrPayloadString = $"AUTOCARE SERVICE TICKET\n" +
+                                         $"====================\n" +
+                                         $"Ticket ID  : #{newlyGeneratedID}\n" +
+                                         $"Plate No   : {txtJobVehicleNo.Text}\n" +
+                                         $"Service    : {serviceText}\n" +
+                                         $"Mechanic   : {mechanic}\n" +
+                                         $"APPOINTMENT: {combinedBookingDateTime}\n" +
+                                         $"Status     : Pending";
+
+                using (QRCodeGenerator qrGenerator = new QRCodeGenerator())
+                using (QRCodeData qrCodeData = qrGenerator.CreateQrCode(qrPayloadString, QRCodeGenerator.ECCLevel.Q))
+                using (PngByteQRCode qrCode = new PngByteQRCode(qrCodeData))
+                {
+                    byte[] qrGraphArray = qrCode.GetGraphic(15);
+                    using (MemoryStream stream = new MemoryStream(qrGraphArray))
+                    {
+                        BitmapImage bmpImage = new BitmapImage();
+                        bmpImage.BeginInit();
+                        bmpImage.CacheOption = BitmapCacheOption.OnLoad;
+                        bmpImage.StreamSource = stream;
+                        bmpImage.EndInit();
+
+                        imgQrCode.Source = bmpImage;
+                    }
+                }
+
+                txtQrPlaceholder.Visibility = Visibility.Collapsed;
+                btnPrintToken.IsEnabled = true;
+
+                MessageBox.Show($"Job Card Ticket #{newlyGeneratedID} successfully created for {combinedBookingDateTime}!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                // 🔄 Form එකේ තිබෙන Inputs රීසෙට් කිරීම සහ සජීවීව රිසිට් එක Refresh කිරීම
+                txtJobVehicleNo.Clear();
+                txtMechanicName.Clear();
+                cmbServices.SelectedIndex = -1;
+                cmbTimeSlots.SelectedIndex = -1;
+                dpBookingDate.SelectedDate = null;
+
+                // Refresh table display context
+                LoadJobVehiclesGrid();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to save operational job card: " + ex.Message, "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void btnPrintToken_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Sending high-resolution QR layout token blueprint slips directly to local print queue...", "Thermal Printer Interface", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 }

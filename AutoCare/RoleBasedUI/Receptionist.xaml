@@ -255,11 +255,122 @@
                 </Grid>
             </TabItem>
 
+
             <TabItem Header="Job Cards &amp; QR Tokens">
-                <Grid Margin="20">
-                    <TextBlock Text="Job Card Workspace Placeholder" Foreground="#A0AFA6" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14"/>
+                <Grid Margin="5,10,5,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="360"/>
+                        <ColumnDefinition Width="15"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="#1A261F" CornerRadius="8" Padding="15" Margin="5">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
+                            <StackPanel>
+                                <TextBlock Text="Issue New Job Card" FontSize="18" Foreground="#42D67B" FontWeight="Bold" Margin="0,0,0,15"/>
+
+                                <TextBlock Text="Selected Vehicle Plate:" Foreground="#A0AFA6" Margin="0,2,0,2" FontSize="12"/>
+                                <TextBox Name="txtJobVehicleNo" Height="32" Background="#121C16" Foreground="White" BorderBrush="#2D4235" IsReadOnly="True" Padding="8,0" VerticalContentAlignment="Center" Margin="0,0,0,12"/>
+
+                                <TextBlock Text="Select Required Maintenance Service:" Foreground="#A0AFA6" Margin="0,0,0,2" FontSize="12"/>
+                                <ComboBox Name="cmbServices" Height="32" Background="Transparent" Foreground="Black" BorderBrush="#2D4235" Margin="0,0,0,12" VerticalContentAlignment="Center"/>
+
+                                <TextBlock Text="Assign Field Mechanic Name:" Foreground="#A0AFA6" Margin="0,0,0,2" FontSize="12"/>
+                                <TextBox Name="txtMechanicName" Height="32" Background="#121C16" Foreground="White" BorderBrush="#2D4235" SelectionBrush="#42D67B" Padding="8,0" VerticalContentAlignment="Center" Margin="0,0,0,12"/>
+
+                                <Grid Margin="0,0,0,15">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Margin="0,0,4,0">
+                                        <TextBlock Text="Booking Date:" Foreground="#A0AFA6" Margin="0,0,0,4" FontSize="11"/>
+                                        <DatePicker Name="dpBookingDate" Background="#121C16" Foreground="Black"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="4,0,0,0">
+                                        <TextBlock Text="Time Slot:" Foreground="#A0AFA6" Margin="0,0,0,4" FontSize="11"/>
+                                        <ComboBox Name="cmbTimeSlots" Height="32" Background="Transparent" Foreground="Black" BorderBrush="#2D4235">
+                                            <ComboBoxItem Content="09:00 AM" Foreground="Black"/>
+                                            <ComboBoxItem Content="10:00 AM" Foreground="Black"/>
+                                            <ComboBoxItem Content="11:00 AM" Foreground="Black"/>
+                                            <ComboBoxItem Content="12:00 AM" Foreground="Black"/>
+                                            <ComboBoxItem Content="13:00 AM" Foreground="Black"/>
+                                            <ComboBoxItem Content="14:00 AM" Foreground="Black"/>
+                                            <ComboBoxItem Content="15:00 AM" Foreground="Black"/>
+                                            <ComboBoxItem Content="16:00 AM" Foreground="Black"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                </Grid>
+
+                                <Button Name="btnCreateJobCard" Content="⚡ Issue Ticket &amp; Create QR" Height="38" Background="#42D67B" Foreground="#121C16" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Click="btnCreateJobCard_Click">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="6"/>
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
+
+                                <Border BorderBrush="#2D4235" BorderThickness="1" Background="#121C16" CornerRadius="6" Height="150" Padding="8" Margin="0,15,0,0">
+                                    <Grid>
+                                        <Image Name="imgQrCode" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <TextBlock Name="txtQrPlaceholder" Text="QR Token Print Preview" Foreground="#5A6E62" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                    </Grid>
+                                </Border>
+
+                                <Button Name="btnPrintToken" Content="🖨️ Print Token Receipt Slip" Height="32" Background="Transparent" Foreground="#42D67B" BorderBrush="#42D67B" BorderThickness="1" Margin="0,10,0,0" Cursor="Hand" IsEnabled="False" Click="btnPrintToken_Click">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="4"/>
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+
+                    <Border Grid.Column="2" Background="#1A261F" CornerRadius="8" Padding="15" Margin="5">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="4*"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="5*"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="Step 1: Select Active Fleet Vehicle Entry" FontSize="13" Foreground="#42D67B" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <DataGrid Name="dgvJobVehiclesSelection" Grid.Row="1" AutoGenerateColumns="True" IsReadOnly="True" 
+                                      Background="#121C16" RowBackground="#1A261F" AlternatingRowBackground="#152219" 
+                                      Foreground="White" BorderThickness="0" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#2D4235" 
+                                      SelectionChanged="dgvJobVehiclesSelection_SelectionChanged" SelectionMode="Single" Cursor="Hand">
+                                <DataGrid.Resources>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="Background" Value="#1E3225"/>
+                                        <Setter Property="Foreground" Value="#42D67B"/>
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                        <Setter Property="Padding" Value="6"/>
+                                    </Style>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="Padding" Value="6"/>
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                    </Style>
+                                </DataGrid.Resources>
+                            </DataGrid>
+
+                            <TextBlock Name="lblGridHeader" Grid.Row="2" Text="⚡ Vehicle Service History Log (Live Receipt Sheet)" FontSize="13" Foreground="#42D67B" FontWeight="Bold" Margin="0,15,0,5"/>
+
+                            <RichTextBox Name="rtbHistoryReport" Grid.Row="3" Background="#121C16" Foreground="#42D67B" BorderBrush="#2D4235" IsReadOnly="True" VerticalScrollBarVisibility="Auto" FontFamily="Consolas" Padding="10">
+                                <FlowDocument>
+                                    <Paragraph>
+                                        <Run Text="No vehicle selected. Click on any active fleet row above to stream historical visits instantly..." Foreground="#5A6E62" FontStyle="Italic"/>
+                                    </Paragraph>
+                                </FlowDocument>
+                            </RichTextBox>
+                        </Grid>
+                    </Border>
                 </Grid>
             </TabItem>
+
+
         </TabControl>
     </Grid>
 </UserControl>
