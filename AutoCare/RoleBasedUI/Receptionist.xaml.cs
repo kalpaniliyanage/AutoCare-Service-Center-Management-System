@@ -30,6 +30,41 @@ namespace AutoCare
             LoadJobVehiclesGrid();
         }
 
+        private void LoadJobVehiclesGrid()
+        {
+            try
+            {
+                using (SqliteConnection conn = DatabaseHelper.GetConnection())
+                {
+                    string query = "SELECT VehicleNo, Model, Year FROM Vehicles ORDER BY VehicleNo DESC;";
+                    using (SqliteCommand cmd = new SqliteCommand(query, conn))
+                    using (SqliteDataReader reader = cmd.ExecuteReader())
+                    {
+                        DataTable dt = new DataTable();
+
+                        dt.Load(reader);
+
+                        // ⚡ THE REAL FIX: මෙතනටත් PrimaryKey සහ Constraints මකන ලයින් දෙක එකතු කළා
+                        dt.PrimaryKey = null;
+                        dt.Constraints.Clear();
+
+                        foreach (DataRow r in dt.Rows)
+                        {
+                            string raw = (r["VehicleNo"] ?? string.Empty).ToString();
+                            string norm = Regex.Replace(raw, "[^A-Z0-9]", string.Empty, RegexOptions.IgnoreCase).ToUpper();
+                            r["VehicleNo"] = FormatPlateForDisplay(norm, raw);
+                        }
+
+                        dgvJobVehiclesSelection.ItemsSource = dt.DefaultView;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to load job vehicles or job cards: " + ex.Message, "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         // Wrapper to match XAML handler name (case-sensitive)
         private void dgvVehicles_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -326,22 +361,21 @@ namespace AutoCare
             {
                 using (SqliteConnection conn = DatabaseHelper.GetConnection())
                 {
-                    // 🛠️ FIXED: Changed JOIN to LEFT JOIN so vehicles show up even if owner linking has an anomaly
                     string query = string.IsNullOrWhiteSpace(keyword)
-                        ? @"SELECT V.VehicleNo, V.Model, V.Year, C.CustomerID AS OwnerID, 
+                        ? @"SELECT V.VehicleNo, V.Model, V.Year, V.CustomerID AS OwnerID, 
                            COALESCE(C.CustomerName, 'No Owner Assigned') AS OwnerName, 
                            COALESCE(C.Phone, 'N/A') AS Phone 
                     FROM Vehicles V 
                     LEFT JOIN Customers C ON V.CustomerID = C.CustomerID 
                     ORDER BY V.VehicleNo DESC;"
-                        : @"SELECT V.VehicleNo, V.Model, V.Year, C.CustomerID AS OwnerID, 
+                        : @"SELECT V.VehicleNo, V.Model, V.Year, V.CustomerID AS OwnerID, 
                            COALESCE(C.CustomerName, 'No Owner Assigned') AS OwnerName, 
                            COALESCE(C.Phone, 'N/A') AS Phone 
                     FROM Vehicles V 
                     LEFT JOIN Customers C ON V.CustomerID = C.CustomerID 
                     WHERE (REPLACE(REPLACE(UPPER(V.VehicleNo),' ',''),'-','') LIKE @KeyNorm) 
                        OR UPPER(V.Model) LIKE @Key 
-                       OR UPPER(COALESCE(C.CustomerName,'')) LIKE @Key 
+                       OR UPPER(COALESCE(C.CustomerName, '')) LIKE @Key 
                     ORDER BY V.VehicleNo DESC;";
 
                     using (SqliteCommand cmd = new SqliteCommand(query, conn))
@@ -357,12 +391,20 @@ namespace AutoCare
                         using (SqliteDataReader reader = cmd.ExecuteReader())
                         {
                             DataTable dt = new DataTable();
+
                             dt.Load(reader);
+
+                            // ⚡ THE REAL FIX: DataTable එකේ මතකය තුළ ඇති සීමාවන් (Unique Rules) සියල්ල ඉවත් කිරීම
+                            dt.PrimaryKey = null;
+                            dt.Constraints.Clear();
+
                             foreach (DataRow r in dt.Rows)
                             {
                                 string raw = (r["VehicleNo"] ?? string.Empty).ToString();
                                 string norm = Regex.Replace(raw, "[^A-Z0-9]", string.Empty, RegexOptions.IgnoreCase).ToUpper();
                                 string formatted = FormatPlateForDisplay(norm, raw);
+
+                                // දැන් කිසිම බාධාවකින් තොරව අගය වෙනස් කළ හැක
                                 r["VehicleNo"] = formatted;
 
                                 if (!dt.Columns.Contains("NormVehicleNo"))
@@ -382,7 +424,6 @@ namespace AutoCare
                 MessageBox.Show("Error loading vehicle records: " + ex.Message, "Database Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
-
         // Nullable Reference parameters ටික .NET 10 වලට ගැලපෙන ලෙස ආරක්ෂිත කිරීම
         private string FormatPlateForDisplay(string? norm, string? original)
         {
@@ -620,38 +661,10 @@ namespace AutoCare
             catch (Exception) { }
         }
 
-        
 
-        private void LoadJobVehiclesGrid()
-        {
-            try
-            {
-                using (SqliteConnection conn = DatabaseHelper.GetConnection())
-                {
-                    string query = "SELECT VehicleNo, Model, Year FROM Vehicles ORDER BY VehicleNo DESC;";
-                    using (SqliteCommand cmd = new SqliteCommand(query, conn))
-                    using (SqliteDataReader reader = cmd.ExecuteReader())
-                    {
-                        DataTable dt = new DataTable();
-                        dt.Load(reader);
 
-                        // Format the plate numbers on Tab 3's grid too so everything stays uniform
-                        foreach (DataRow r in dt.Rows)
-                        {
-                            string raw = (r["VehicleNo"] ?? string.Empty).ToString();
-                            string norm = Regex.Replace(raw, "[^A-Z0-9]", string.Empty, RegexOptions.IgnoreCase).ToUpper();
-                            r["VehicleNo"] = FormatPlateForDisplay(norm, raw);
-                        }
+        // Vehicle grid loader removed (duplicate). Remaining LoadVehiclesGrid implementation is lower in the file.
 
-                        dgvJobVehiclesSelection.ItemsSource = dt.DefaultView;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error loading active job selection grid: " + ex.Message, "System Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
         // -------------------------------------------------------------------------
         // ⚡ NEW: DATA GRID SELECTION CHANGED (සජීවීව රිසිට් පැනලය ලෝඩ් වන කොටස)
         // -------------------------------------------------------------------------
