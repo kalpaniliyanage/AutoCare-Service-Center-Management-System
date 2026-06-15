@@ -3,36 +3,364 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:AutoCare.RoleBasedUI"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
-      Title="Cashier Dashboard"
-      Background="#FFFFFF">
-
+      d:DesignHeight="750" d:DesignWidth="1100"
+      Title="Cashier Dashboard" Background="#12181B">
     <Grid>
-        <Button x:Name="LogoutButton" Content="Logout" 
-                HorizontalAlignment="Right" 
-                VerticalAlignment="Top" 
-                Margin="0,20,20,0" 
-                Padding="15,6" 
-                Background="#D9534F" 
-                Foreground="White" 
-                FontWeight="Bold" 
-                BorderThickness="0"
-                Cursor="Hand"
-                Click="LogoutButton_Click"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="70"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock Text="Cashier Dashboard" 
-                       FontSize="26" 
-                       FontWeight="Bold" 
-                       Foreground="#2C3E50" 
-                       HorizontalAlignment="Center" 
-                       Margin="0,0,0,10"/>
+        <Border Grid.Row="0" Background="#1A2327" CornerRadius="0,0,10,10">
+            <Grid Margin="20,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Ellipse Width="12" Height="12" Fill="#2ECC71" Margin="0,0,10,0"/>
+                    <TextBlock Text="AUTOCARE PREMIER SERVICE SUITE ── CASHIER PORTAL" 
+                               Foreground="#ECEFF1" FontSize="16" FontWeight="Bold" FontFamily="Segoe UI"/>
+                </StackPanel>
 
-            <TextBlock Text="This page has connected to MainWindow. Now you can start implementation." 
-                       FontSize="16" 
-                       Foreground="#7F8C8D" 
-                       HorizontalAlignment="Center"/>
-        </StackPanel>
+                <Button x:Name="LogoutButton" Content="Logout" HorizontalAlignment="Right" VerticalAlignment="Center"
+                        Width="95" Height="35" Background="#E74C3C" Foreground="White" FontWeight="Bold"
+                        BorderThickness="0" Click="LogoutButton_Click" Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="5"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="430"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,15,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="#1E272C" CornerRadius="8" Padding="20" Margin="0,0,0,15">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="15" Direction="270" ShadowDepth="2" Opacity="0.3" Color="Black"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <TextBlock Text="Select Active Job Card" FontSize="14" FontWeight="Bold" Foreground="#2ECC71" Margin="0,0,0,10"/>
+                            <Grid Margin="0,0,0,15">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="TxtJobCardID" Height="38" FontSize="14" VerticalContentAlignment="Center" 
+                                         Padding="10,0" Background="#2C3A42" Foreground="White" BorderBrush="#34495E" BorderThickness="1">
+                                    <TextBox.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="4"/>
+                                        </Style>
+                                    </TextBox.Resources>
+                                </TextBox>
+                                <TextBlock IsHitTestVisible="False" Text="Enter Job Card ID here..." VerticalAlignment="Center" 
+                                           HorizontalAlignment="Left" Margin="10,0,0,0" Foreground="#7F8C8D" FontSize="13">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, ElementName=TxtJobCardID}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <Button x:Name="BtnSearch" Grid.Column="1" Content="Fetch Bill" Width="95" Margin="10,0,0,0" 
+                                        Background="#27AE60" Foreground="White" FontWeight="SemiBold" BorderThickness="0"
+                                        Click="BtnSearch_Click" Cursor="Hand">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="4"/>
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
+                            </Grid>
+
+                            <Separator Background="#2C3A42" Margin="0,0,0,10"/>
+                            <TextBlock Text="Billing Breakdown" FontSize="14" FontWeight="Bold" Foreground="#2ECC71" Margin="0,0,0,10"/>
+
+                            <Grid Margin="0,0,0,10">
+                                <TextBlock Text="Service Cost (Labor):" FontSize="13" Foreground="#95A5A6"/>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <TextBlock Text="LKR " FontSize="13" Foreground="#95A5A6"/>
+                                    <TextBlock x:Name="LblServiceCost" Text="0.00" FontSize="14" FontWeight="SemiBold" Foreground="#ECEFF1"/>
+                                </StackPanel>
+                            </Grid>
+                            <Grid Margin="0,0,0,10">
+                                <TextBlock Text="Material/Inventory Cost:" FontSize="13" Foreground="#95A5A6"/>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <TextBlock Text="LKR " FontSize="13" Foreground="#95A5A6"/>
+                                    <TextBlock x:Name="LblMaterialCost" Text="0.00" FontSize="14" FontWeight="SemiBold" Foreground="#ECEFF1"/>
+                                </StackPanel>
+                            </Grid>
+                            <Grid Margin="0,0,0,12">
+                                <TextBlock Text="Apply Discount (LKR):" FontSize="13" Foreground="#95A5A6" VerticalAlignment="Center"/>
+                                <TextBox x:Name="TxtDiscount" Width="120" Height="30" HorizontalAlignment="Right" Text="0.00"
+                                         TextAlignment="Right" VerticalContentAlignment="Center" Padding="5,0" 
+                                         Background="#2C3A42" Foreground="#E74C3C" FontWeight="Bold" BorderBrush="#34495E" TextChanged="TxtDiscount_TextChanged"/>
+                            </Grid>
+
+                            <Separator Background="#2C3A42" Margin="0,0,0,12"/>
+                            <Border Background="#1B3A24" BorderBrush="#27AE60" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,15">
+                                <Grid>
+                                    <TextBlock Text="TOTAL PAYABLE" FontSize="11" FontWeight="Bold" Foreground="#2ECC71" VerticalAlignment="Center"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <TextBlock Text="Rs. " FontSize="16" FontWeight="Bold" Foreground="#2ECC71"/>
+                                        <TextBlock x:Name="LblTotalAmount" Text="0.00" FontSize="20" FontWeight="Bold" Foreground="#2ECC71"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <TextBlock Text="Payment Method" FontSize="12" FontWeight="SemiBold" Foreground="#95A5A6" Margin="0,0,0,5"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                                <RadioButton x:Name="RadCash" Content="Cash" IsChecked="True" FontSize="12" Foreground="#ECEFF1" Margin="0,0,15,0"/>
+                                <RadioButton x:Name="RadCard" Content="Card" FontSize="12" Foreground="#ECEFF1" Margin="0,0,15,0"/>
+                                <RadioButton x:Name="RadOnline" Content="QR/Online" FontSize="12" Foreground="#ECEFF1"/>
+                            </StackPanel>
+
+                            <Button x:Name="BtnProcessPayment" Content="🔒 PROCEED PAYMENT &amp; UPDATE" Height="42" 
+                                    Background="#27AE60" Foreground="White" FontSize="13" FontWeight="Bold" 
+                                    BorderThickness="0" Click="BtnProcessPayment_Click" Cursor="Hand">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="6"/>
+                                    </Style>
+                                </Button.Resources>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Background="#1E272C" CornerRadius="8" Padding="15" Margin="0,0,0,10">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="15" Direction="270" ShadowDepth="2" Opacity="0.3" Color="Black"/>
+                        </Border.Effect>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0" Margin="0,0,0,15">
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Daily Revenue Summary" FontSize="13" FontWeight="Bold" Foreground="#2ECC71"/>
+                                    <TextBlock Text="Real-time transaction tracks" FontSize="10" Foreground="#7F8C8D"/>
+                                </StackPanel>
+                                <Button x:Name="BtnGetIncomeReport" Content="📊 GET INCOME REPORT" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                        Width="150" Height="30" Background="#34495E" Foreground="#2ECC71" FontWeight="Bold" FontSize="10"
+                                        BorderBrush="#2ECC71" BorderThickness="1" Click="BtnGetIncomeReport_Click" Cursor="Hand">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="4"/>
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
+                            </Grid>
+
+                            <Grid Grid.Row="1" Margin="0,10,0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" VerticalAlignment="Stretch" Margin="0,0,10,20">
+                                    <TextBlock Text="100K" Foreground="#7F8C8D" FontSize="9" Height="15"/>
+                                    <TextBlock Text="75K" Foreground="#7F8C8D" FontSize="9" Height="15" Margin="0,13,0,0"/>
+                                    <TextBlock Text="50K" Foreground="#7F8C8D" FontSize="9" Height="15" Margin="0,13,0,0"/>
+                                    <TextBlock Text="25K" Foreground="#7F8C8D" FontSize="9" Height="15" Margin="0,13,0,0"/>
+                                    <TextBlock Text="0" Foreground="#7F8C8D" FontSize="9" Height="15" VerticalAlignment="Bottom" Margin="0,13,0,0"/>
+                                </StackPanel>
+
+                                <Grid Grid.Column="1">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="20"/>
+                                    </Grid.RowDefinitions>
+
+                                    <StackPanel Grid.Row="0" VerticalAlignment="Stretch">
+                                        <Separator Background="#2C3A42" Margin="0,0,0,25"/>
+                                        <Separator Background="#2C3A42" Margin="0,0,0,25"/>
+                                        <Separator Background="#2C3A42" Margin="0,0,0,25"/>
+                                        <Separator Background="#2C3A42" Margin="0,0,0,25"/>
+                                        <Border BorderBrush="#34495E" BorderThickness="0,0,0,2" VerticalAlignment="Bottom"/>
+                                    </StackPanel>
+
+                                    <UniformGrid Grid.Row="0" Columns="5" VerticalAlignment="Bottom" Height="110">
+                                        <Grid VerticalAlignment="Bottom" Margin="8,0">
+                                            <Border Background="#2C3A42" CornerRadius="3,3,0,0" Height="45" VerticalAlignment="Bottom"/>
+                                            <Border x:Name="BarMon" Background="#27AE60" CornerRadius="3,3,0,0" Height="35" VerticalAlignment="Bottom">
+                                                <ToolTipService.InitialShowDelay>50</ToolTipService.InitialShowDelay>
+                                                <ToolTipService.ToolTip>
+                                                    <ToolTip Background="#1A2327" BorderBrush="#27AE60">
+                                                        <TextBlock Text="Monday Income: LKR 35,000.00" Foreground="White"/>
+                                                    </ToolTip>
+                                                </ToolTipService.ToolTip>
+                                            </Border>
+                                        </Grid>
+                                        <Grid VerticalAlignment="Bottom" Margin="8,0">
+                                            <Border Background="#2C3A42" CornerRadius="3,3,0,0" Height="65" VerticalAlignment="Bottom"/>
+                                            <Border x:Name="BarTue" Background="#27AE60" CornerRadius="3,3,0,0" Height="58" VerticalAlignment="Bottom">
+                                                <ToolTipService.ToolTip>
+                                                    <ToolTip Background="#1A2327" BorderBrush="#27AE60">
+                                                        <TextBlock Text="Tuesday Income: LKR 58,000.00" Foreground="White"/>
+                                                    </ToolTip>
+                                                </ToolTipService.ToolTip>
+                                            </Border>
+                                        </Grid>
+                                        <Grid VerticalAlignment="Bottom" Margin="8,0">
+                                            <Border Background="#2C3A42" CornerRadius="3,3,0,0" Height="90" VerticalAlignment="Bottom"/>
+                                            <Border x:Name="BarWed" Background="#2ECC71" CornerRadius="3,3,0,0" Height="85" VerticalAlignment="Bottom">
+                                                <ToolTipService.ToolTip>
+                                                    <ToolTip Background="#1A2327" BorderBrush="#2ECC71">
+                                                        <TextBlock Text="Wednesday Income: LKR 85,000.00" Foreground="White"/>
+                                                    </ToolTip>
+                                                </ToolTipService.ToolTip>
+                                            </Border>
+                                        </Grid>
+                                        <Grid VerticalAlignment="Bottom" Margin="8,0">
+                                            <Border Background="#2C3A42" CornerRadius="3,3,0,0" Height="50" VerticalAlignment="Bottom"/>
+                                            <Border x:Name="BarThu" Background="#27AE60" CornerRadius="3,3,0,0" Height="42" VerticalAlignment="Bottom">
+                                                <ToolTipService.ToolTip>
+                                                    <ToolTip Background="#1A2327" BorderBrush="#27AE60">
+                                                        <TextBlock Text="Thursday Income: LKR 42,000.00" Foreground="White"/>
+                                                    </ToolTip>
+                                                </ToolTipService.ToolTip>
+                                            </Border>
+                                        </Grid>
+                                        <Grid VerticalAlignment="Bottom" Margin="8,0">
+                                            <Border Background="#34495E" CornerRadius="3,3,0,0" Height="110" VerticalAlignment="Bottom"/>
+                                            <Border x:Name="BarToday" Background="#F1C40F" CornerRadius="3,3,0,0" Height="98" VerticalAlignment="Bottom">
+                                                <Border.Effect>
+                                                    <DropShadowEffect BlurRadius="8" Color="#F1C40F" Opacity="0.5" ShadowDepth="0"/>
+                                                </Border.Effect>
+                                                <ToolTipService.ToolTip>
+                                                    <ToolTip Background="#1A2327" BorderBrush="#F1C40F">
+                                                        <TextBlock Text="Today Live Income: LKR 98,250.00" FontWeight="Bold" Foreground="White"/>
+                                                    </ToolTip>
+                                                </ToolTipService.ToolTip>
+                                            </Border>
+                                        </Grid>
+                                    </UniformGrid>
+
+                                    <UniformGrid Grid.Row="1" Columns="5" Margin="0,5,0,0">
+                                        <TextBlock Text="Mon" Foreground="#95A5A6" FontSize="10" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="Tue" Foreground="#95A5A6" FontSize="10" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="Wed" Foreground="#95A5A6" FontSize="10" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="Thu" Foreground="#95A5A6" FontSize="10" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="Today" Foreground="#F1C40F" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    </UniformGrid>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </ScrollViewer>
+
+            <Border Grid.Column="1" Background="#1E272C" CornerRadius="8" Padding="25">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="20" Direction="270" ShadowDepth="3" Opacity="0.4" Color="Black"/>
+                </Border.Effect>
+                <Grid>
+                    <StackPanel x:Name="PanelEmptyState" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="📄" FontSize="48" HorizontalAlignment="Center" Foreground="#34495E"/>
+                        <TextBlock Text="No Invoice Loaded. Enter a valid Job Card ID to preview." 
+                                   Margin="0,10,0,0" FontSize="13" Foreground="#7F8C8D" HorizontalAlignment="Center"/>
+                    </StackPanel>
+
+                    <ScrollViewer x:Name="ScrollInvoice" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <Border x:Name="PrintArea" Background="White" CornerRadius="4" Padding="5">
+                                <StackPanel Margin="10">
+                                    <Grid>
+                                        <StackPanel>
+                                            <TextBlock Text="AUTOCARE PREMIER SERVICE" FontSize="16" FontWeight="Bold" Foreground="#1E4620"/>
+                                            <TextBlock Text="123, Service Station Rd, Colombo" FontSize="11" Foreground="#7F8C8D"/>
+                                            <TextBlock Text="Tel: +94 11 234 5678" FontSize="11" Foreground="#7F8C8D"/>
+                                        </StackPanel>
+                                        <StackPanel HorizontalAlignment="Right">
+                                            <TextBlock Text="INVOICE RECEIPT" FontSize="16" FontWeight="Bold" Foreground="#2C3E50"/>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                                <TextBlock Text="Ref Job ID: #" FontSize="12" Foreground="#2C3E50"/>
+                                                <TextBlock x:Name="TxtPreviewJobCardID" Text="0" FontSize="12" FontWeight="Bold" Foreground="Black"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <Separator Background="#1E4620" Height="2" Margin="0,15"/>
+
+                                    <Grid Margin="0,0,0,15">
+                                        <StackPanel>
+                                            <TextBlock Text="Billed To:" FontSize="11" FontWeight="Bold" Foreground="#7F8C8D"/>
+                                            <TextBlock x:Name="TxtPreviewCustomer" Text="Customer Name" FontSize="13" FontWeight="Bold" Foreground="#2C3E50"/>
+                                            <TextBlock x:Name="TxtPreviewVehicle" Text="Vehicle No: WP ABC-1234" FontSize="12" Foreground="#34495E"/>
+                                        </StackPanel>
+                                        <StackPanel HorizontalAlignment="Right">
+                                            <TextBlock x:Name="TxtPreviewDate" Text="Date: 2026-06-04" FontSize="12" Foreground="#34495E"/>
+                                            <Border x:Name="BadgeStatus" Background="#FFEBEE" Padding="8,3" CornerRadius="4" Margin="0,5,0,0" HorizontalAlignment="Right">
+                                                <TextBlock x:Name="TxtPreviewStatus" Text="UNPAID" Foreground="#C62828" FontWeight="Bold" FontSize="12"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <Separator Background="#ECF0F1" Margin="0,15"/>
+
+                                    <StackPanel x:Name="ReceiptItemsContainer" Margin="0,0,0,10">
+                                        <Grid Margin="0,5">
+                                            <TextBlock Text="Labor Fees / Mechanical Services" Foreground="#7F8C8D" FontSize="13"/>
+                                            <TextBlock x:Name="TxtReceiptLaborPrice" Text="LKR 0.00" HorizontalAlignment="Right" Foreground="#2C3E50" FontWeight="SemiBold"/>
+                                        </Grid>
+                                        <Grid Margin="0,5">
+                                            <TextBlock Text="Issued Spare Parts &amp; Materials" Foreground="#7F8C8D" FontSize="13"/>
+                                            <TextBlock x:Name="TxtReceiptMaterialPrice" Text="LKR 0.00" HorizontalAlignment="Right" Foreground="#2C3E50" FontWeight="SemiBold"/>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <Separator Background="#ECF0F1" Margin="0,10"/>
+
+                                    <Grid Margin="0,4">
+                                        <TextBlock Text="Subtotal Bill Amount:" Foreground="#7F8C8D"/>
+                                        <TextBlock x:Name="TxtReceiptSubtotal" Text="LKR 0.00" HorizontalAlignment="Right" Foreground="#2C3E50" FontWeight="Bold"/>
+                                    </Grid>
+                                    <Grid Margin="0,4">
+                                        <TextBlock Text="Applied Loyalty Discount:" Foreground="#7F8C8D"/>
+                                        <TextBlock x:Name="TxtReceiptDiscount" Text="LKR 0.00" HorizontalAlignment="Right" Foreground="Red" FontWeight="Bold"/>
+                                    </Grid>
+
+                                    <Border Background="#E8F5E9" CornerRadius="6" Padding="12" Margin="0,10,0,0">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="TOTAL PAYABLE AMOUNT" FontWeight="Bold" Foreground="#2E7D32" VerticalAlignment="Center"/>
+                                            <TextBlock x:Name="TxtPreviewNetAmount" Grid.Column="1" Text="LKR 0.00" HorizontalAlignment="Right" FontSize="18" FontWeight="Bold" Foreground="#1B5E20"/>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                                <Button x:Name="BtnGetPDF" Content="📄 GET PDF REPORT" Width="140" Height="38" Margin="0,0,10,0" 
+                                        Background="#27AE60" Foreground="White" FontWeight="Bold" BorderThickness="0" Click="BtnGetPDF_Click" Cursor="Hand"/>
+                                <Button x:Name="BtnClosePreview" Content="Close" Width="80" Height="38" Background="#34495E" Foreground="#ECEFF1"
+                                        FontWeight="SemiBold" BorderThickness="0" Click="LogoutButton_Click" Cursor="Hand"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 </Page>
