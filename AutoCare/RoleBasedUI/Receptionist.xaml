@@ -294,10 +294,10 @@
                                             <ComboBoxItem Content="10:00 AM" Foreground="Black"/>
                                             <ComboBoxItem Content="11:00 AM" Foreground="Black"/>
                                             <ComboBoxItem Content="12:00 AM" Foreground="Black"/>
-                                            <ComboBoxItem Content="13:00 AM" Foreground="Black"/>
-                                            <ComboBoxItem Content="14:00 AM" Foreground="Black"/>
-                                            <ComboBoxItem Content="15:00 AM" Foreground="Black"/>
-                                            <ComboBoxItem Content="16:00 AM" Foreground="Black"/>
+                                            <ComboBoxItem Content="13:00 PM" Foreground="Black"/>
+                                            <ComboBoxItem Content="14:00 PM" Foreground="Black"/>
+                                            <ComboBoxItem Content="15:00 PM" Foreground="Black"/>
+                                            <ComboBoxItem Content="16:00 PM" Foreground="Black"/>
                                         </ComboBox>
                                     </StackPanel>
                                 </Grid>
@@ -330,42 +330,78 @@
 
                     <Border Grid.Column="2" Background="#1A261F" CornerRadius="8" Padding="15" Margin="5">
                         <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="4*"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="5*"/>
-                            </Grid.RowDefinitions>
+                            <Grid Grid.Column="1" Margin="10,0,0,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="2*"/>
 
-                            <TextBlock Grid.Row="0" Text="Step 1: Select Active Fleet Vehicle Entry" FontSize="13" Foreground="#42D67B" FontWeight="Bold" Margin="0,0,0,5"/>
-                            <DataGrid Name="dgvJobVehiclesSelection" Grid.Row="1" AutoGenerateColumns="True" IsReadOnly="True" 
-                                      Background="#121C16" RowBackground="#1A261F" AlternatingRowBackground="#152219" 
-                                      Foreground="White" BorderThickness="0" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#2D4235" 
-                                      SelectionChanged="dgvJobVehiclesSelection_SelectionChanged" SelectionMode="Single" Cursor="Hand">
-                                <DataGrid.Resources>
-                                    <Style TargetType="DataGridColumnHeader">
-                                        <Setter Property="Background" Value="#1E3225"/>
-                                        <Setter Property="Foreground" Value="#42D67B"/>
-                                        <Setter Property="FontWeight" Value="Bold"/>
-                                        <Setter Property="Padding" Value="6"/>
-                                    </Style>
-                                    <Style TargetType="DataGridCell">
-                                        <Setter Property="Padding" Value="6"/>
-                                        <Setter Property="BorderThickness" Value="0"/>
-                                    </Style>
-                                </DataGrid.Resources>
-                            </DataGrid>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="3*"/>
+                                </Grid.RowDefinitions>
 
-                            <TextBlock Name="lblGridHeader" Grid.Row="2" Text="⚡ Vehicle Service History Log (Live Receipt Sheet)" FontSize="13" Foreground="#42D67B" FontWeight="Bold" Margin="0,15,0,5"/>
+                                <TextBlock Text="Step 1: Select Active Fleet Vehicle Entry" 
+                                           Grid.Row="0" 
+                                           Foreground="LightGreen" 
+                                           FontWeight="Bold" 
+                                           FontSize="14"
+                                           Margin="5,5,5,10"/>
 
-                            <RichTextBox Name="rtbHistoryReport" Grid.Row="3" Background="#121C16" Foreground="#42D67B" BorderBrush="#2D4235" IsReadOnly="True" VerticalScrollBarVisibility="Auto" FontFamily="Consolas" Padding="10">
-                                <FlowDocument>
-                                    <Paragraph>
-                                        <Run Text="No vehicle selected. Click on any active fleet row above to stream historical visits instantly..." Foreground="#5A6E62" FontStyle="Italic"/>
-                                    </Paragraph>
-                                </FlowDocument>
-                            </RichTextBox>
-                        </Grid>
+                                <DataGrid Name="dgvJobVehiclesSelection" 
+                                          Grid.Row="1" 
+                                          Margin="5" 
+                                          AutoGenerateColumns="False" 
+                                          IsReadOnly="True"
+                                          SelectionChanged="dgvJobVehiclesSelection_SelectionChanged"
+                                          Background="#14221A" 
+                                          RowBackground="#1A2E22" 
+                                          AlternatingRowBackground="#14221A" 
+                                          Foreground="White" 
+                                          BorderThickness="0" 
+                                          GridLinesVisibility="None" 
+                                          HeadersVisibility="Column" 
+                                          RowHeaderWidth="0">
+
+                                    <DataGrid.ColumnHeaderStyle>
+                                        <Style TargetType="DataGridColumnHeader">
+                                            <Setter Property="Background" Value="#14221A"/>
+                                            <Setter Property="Foreground" Value="#2ECC71"/>
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                            <Setter Property="Padding" Value="10,6"/>
+                                        </Style>
+                                    </DataGrid.ColumnHeaderStyle>
+
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="VehicleNo" Binding="{Binding VehicleNo}" Width="1.5*"/>
+                                        <DataGridTextColumn Header="Model" Binding="{Binding Model}" Width="2*"/>
+                                        <DataGridTextColumn Header="Year" Binding="{Binding Year}" Width="1*"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <TextBlock Text="⚡ Vehicle Service History Log (Live Receipt Sheet)" 
+                                           Grid.Row="2" 
+                                           Foreground="LightGreen" 
+                                           FontWeight="Bold" 
+                                           FontSize="14"
+                                           Margin="5,20,5,10"/>
+
+                                <RichTextBox Name="rtbHistoryReport" 
+                                             Grid.Row="3" 
+                                             Margin="5" 
+                                             IsReadOnly="True" 
+                                             IsDocumentEnabled="True" 
+                                             Background="#1E1E1E" 
+                                             Foreground="White" 
+                                             FontFamily="Consolas" 
+                                             FontSize="12"
+                                             VerticalScrollBarVisibility="Auto">                                                
+                                    <FlowDocument>
+                                        <Paragraph>
+                                            <Run Text="No vehicle selected. Click on any active fleet row above to stream historical visits instantly..." Foreground="DarkGray" FontStyle="Italic"/>
+                                        </Paragraph>
+                                    </FlowDocument>
+                                </RichTextBox>
+                            </Grid>
+                           </Grid>
                     </Border>
                 </Grid>
             </TabItem>

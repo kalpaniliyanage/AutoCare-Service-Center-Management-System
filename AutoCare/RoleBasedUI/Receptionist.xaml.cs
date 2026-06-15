@@ -686,12 +686,12 @@ namespace AutoCare
                     using (SqliteConnection conn = DatabaseHelper.GetConnection())
                     {
                         string query = @"SELECT J.JobCardID, S.ServiceName, J.MechanicName, J.DateReceived, J.JobStatus, C.CustomerName, C.Phone 
-                                         FROM JobCards J
-                                         JOIN Services S ON J.ServiceID = S.ServiceID
-                                         JOIN Vehicles V ON J.VehicleNo = V.VehicleNo
-                                         JOIN Customers C ON V.CustomerID = C.CustomerID
-                                         WHERE J.VehicleNo = @VehicleNo
-                                         ORDER BY J.JobCardID DESC;";
+                                 FROM JobCards J
+                                 JOIN Services S ON J.ServiceID = S.ServiceID
+                                 JOIN Vehicles V ON J.VehicleNo = V.VehicleNo
+                                 JOIN Customers C ON V.CustomerID = C.CustomerID
+                                 WHERE J.VehicleNo = @VehicleNo
+                                 ORDER BY J.JobCardID DESC;";
 
                         using (SqliteCommand cmd = new SqliteCommand(query, conn))
                         {
@@ -703,9 +703,12 @@ namespace AutoCare
 
                                 while (reader.Read())
                                 {
+                                    long currentJobCardID = Convert.ToInt64(reader["JobCardID"]);
+                                    string currentStatus = reader["JobStatus"]?.ToString() ?? "Pending";
+
                                     if (!hasRecords)
                                     {
-                                        paragraph.Inlines.Add(new Bold(new Run($"AUTOCARE VEHICLE HISTORY PROFILE\n")) { Foreground = System.Windows.Media.Brushes.White });
+                                        paragraph.Inlines.Add(new Bold(new Run($"AUTOCARE VEHICLE HISTORY PROFILE\n")) { Foreground = System.Windows.Media.Brushes.LightGreen });
                                         paragraph.Inlines.Add(new Run($"==============================================\n"));
                                         paragraph.Inlines.Add(new Run($"Target Plate : {vehicleNo}\n"));
                                         paragraph.Inlines.Add(new Run($"Owner Name   : {reader["CustomerName"]?.ToString() ?? "N/A"}\n"));
@@ -714,13 +717,43 @@ namespace AutoCare
                                         hasRecords = true;
                                     }
 
-                                    paragraph.Inlines.Add(new Bold(new Run($"Visit #{visitIndex} [Ticket ID: #{reader["JobCardID"]}]\n")) { Foreground = System.Windows.Media.Brushes.White });
+                                    paragraph.Inlines.Add(new Bold(new Run($"Visit #{visitIndex} [Ticket ID: #{currentJobCardID}]\n")));
                                     paragraph.Inlines.Add(new Run($"  Service  : {reader["ServiceName"]?.ToString() ?? "N/A"}\n"));
                                     paragraph.Inlines.Add(new Run($"  Mechanic : {reader["MechanicName"]?.ToString() ?? "N/A"}\n"));
                                     paragraph.Inlines.Add(new Run($"  Schedule : {reader["DateReceived"]?.ToString() ?? "N/A"}\n"));
-                                    paragraph.Inlines.Add(new Run($"  Job State: {reader["JobStatus"]?.ToString() ?? "N/A"}\n"));
-                                    paragraph.Inlines.Add(new Run($"----------------------------------------------\n"));
 
+                                    paragraph.Inlines.Add(new Run("  Job State: "));
+                                    if (currentStatus.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        Run statusRun = new Run("Pending ") { Foreground = System.Windows.Media.Brushes.Tomato, FontStyle = FontStyles.Italic };
+                                        paragraph.Inlines.Add(statusRun);
+
+                                        // ⚡ FIX: NotSupportedException එක මඟහරවා ගන්න Uri/NavigateUri පාවිච්චි නොකර, සාමාන්‍ය Run එකක් සාදා එය ලින්ක් එකක් ලෙස ක්‍රියා කරවීම
+                                        Run completeAction = new Run("[MARK AS COMPLETE]")
+                                        {
+                                            Foreground = System.Windows.Media.Brushes.DeepSkyBlue,
+                                            Cursor = System.Windows.Input.Cursors.Hand // Hand Cursor එක ලබාදීම
+                                        };
+
+                                        // මූසිකය උඩට ආ විට සහ ඉවත් වූ විට Cursor එක Hand කිරීම
+                                        completeAction.MouseEnter += (s, ev) => { System.Windows.Input.Mouse.OverrideCursor = System.Windows.Input.Cursors.Hand; };
+                                        completeAction.MouseLeave += (s, ev) => { System.Windows.Input.Mouse.OverrideCursor = null; };
+
+                                        // ⚡ ක්ලික් කළ විට සෘජුවම ඩේටාබේස් එක අප්ඩේට් කරන Event එක ක්‍රියාත්මක කිරීම
+                                        completeAction.MouseDown += (s, ev) =>
+                                        {
+                                            ExecuteDirectStatusUpdate(currentJobCardID);
+                                        };
+
+                                        paragraph.Inlines.Add(completeAction);
+                                        paragraph.Inlines.Add(new Run("\n"));
+                                    }
+                                    else
+                                    {
+                                        paragraph.Inlines.Add(new Run("Complete ✓\n") { Foreground = System.Windows.Media.Brushes.LimeGreen });
+                                    }
+
+                                    paragraph.Inlines.Add(new Run($"----------------------------------------------\n"));
                                     visitIndex++;
                                 }
 
@@ -739,6 +772,45 @@ namespace AutoCare
                 {
                     MessageBox.Show("Failed to parse history stream: " + ex.Message, "System Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
+            }
+        }
+
+        // ⚡ ඩේටාබේස් එකේ STATUS එක 'Complete' කරන රහස් මෙතඩ් එක
+        private void ExecuteDirectStatusUpdate(long jobCardID)
+        {
+            var confirm = MessageBox.Show($"Are you sure you want to change Ticket #{jobCardID} status to COMPLETED?",
+                                         "Confirm Status Shift", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (confirm != MessageBoxResult.Yes) return;
+
+            try
+            {
+                // 1. ඩේටාබේස් එකේ Status එක 'Complete' බවට පත් කිරීම
+                using (SqliteConnection conn = DatabaseHelper.GetConnection())
+                {
+                    string query = "UPDATE JobCards SET JobStatus = 'Complete' WHERE JobCardID = @ID;";
+                    using (SqliteCommand cmd = new SqliteCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@ID", jobCardID);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                MessageBox.Show($"Ticket #{jobCardID} successfully closed and marked as Complete!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                // ⚡ 2. THE ABSOLUTE REFRESH FIX: RichTextBox එකේ Document එක සම්පූර්ණයෙන්ම බිංදුවටම බස්සා නිවා දැමීම
+                rtbHistoryReport.Document.Blocks.Clear();
+                rtbHistoryReport.Document = new FlowDocument();
+
+                // 3. දැනට Grid එකේ සිලෙක්ට් වෙලා ඉන්න වාහන පේළියම කේතය මඟින් නැවත ක්ලික් කරවා නව දත්ත ලෝඩ් කරවීම
+                if (dgvJobVehiclesSelection.SelectedItem != null)
+                {
+                    // SelectionChanged Event එක බලහත්කාරයෙන් රන් කරවීම මඟින් ඩේටාබේස් එකෙන් අලුත්ම 'Complete' අගය රිසිට් එකට ඇදලා ගනී
+                    dgvJobVehiclesSelection_SelectionChanged(dgvJobVehiclesSelection, null!);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to shift operational status context: " + ex.Message, "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
