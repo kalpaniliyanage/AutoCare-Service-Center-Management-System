@@ -3,36 +3,422 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+      xmlns:sys="clr-namespace:System;assembly=mscorlib"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
+      d:DesignHeight="642.526" d:DesignWidth="980.928"
       Title="Service Manager Dashboard"
-      Background="#FFFFFF">
+      Background="#0A1A0F">
 
-    <Grid>
-        <Button x:Name="LogoutButton" Content="Logout" 
-                HorizontalAlignment="Right" 
-                VerticalAlignment="Top" 
-                Margin="0,20,20,0" 
-                Padding="15,6" 
-                Background="#D9534F" 
-                Foreground="White" 
-                FontWeight="Bold" 
-                BorderThickness="0"
-                Cursor="Hand"
-                Click="LogoutButton_Click"/>
+    <Page.Resources>
+        <!-- TextBox Dark Style -->
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#1A3622"/>
+            <Setter Property="Foreground" Value="#E8F5E9"/>
+            <Setter Property="BorderBrush" Value="#2A5C35"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CaretBrush" Value="#1BEB28"/>
+        </Style>
 
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock Text="Service Manager Dashboard" 
-                       FontSize="26" 
-                       FontWeight="Bold" 
-                       Foreground="#2C3E50" 
-                       HorizontalAlignment="Center" 
-                       Margin="0,0,0,10"/>
+        <Style TargetType="ComboBox">
+            <Setter Property="Background" Value="#1A3622"/>
+            <Setter Property="Foreground" Value="#E8F5E9"/>
+            <Setter Property="BorderBrush" Value="#2A5C35"/>
+            <Setter Property="Padding" Value="5,2"/>
+        </Style>
 
-            <TextBlock Text="This page has connected to MainWindow. Now you can start implementation." 
-                       FontSize="16" 
-                       Foreground="#7F8C8D" 
-                       HorizontalAlignment="Center"/>
-        </StackPanel>
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Background" Value="#1A3622"/>
+            <Setter Property="Foreground" Value="#E8F5E9"/>
+            <Setter Property="Padding" Value="5"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#2A5C35"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#388E3C"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Separator Dark Style -->
+        <Style TargetType="Separator">
+            <Setter Property="Background" Value="#2A5C35"/>
+        </Style>
+        <!-- DataGrid Dark Style -->
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="#0F2318"/>
+            <Setter Property="Foreground" Value="#E8F5E9"/>
+            <Setter Property="BorderBrush" Value="#2A5C35"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="RowBackground" Value="#0F2318"/>
+            <Setter Property="AlternatingRowBackground" Value="#132B1A"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#1A3020"/>
+            <Setter Property="VerticalGridLinesBrush" Value="#1A3020"/>
+        </Style>
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#1A3622"/>
+            <Setter Property="Foreground" Value="#1BEB28"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderBrush" Value="#2A5C35"/>
+            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+        </Style>
+        <Style TargetType="DataGridRow">
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#1F4029"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#27AE60"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="DataGridCell">
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="BorderBrush" Value="Transparent"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <!-- TabItem Style -->
+        <Style TargetType="TabItem">
+            <Setter Property="Background" Value="#0F2318"/>
+            <Setter Property="Foreground" Value="#7FBD88"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="BorderBrush" Value="#2A5C35"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#132B1A"/>
+                    <Setter Property="Foreground" Value="#1BEB28"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="#1BEB28"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Page.Resources>
+
+    <Grid Background="#0A1A0F">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Background="#0F2318" Grid.Row="0" Padding="15,0"
+                BorderBrush="#2A5C35" BorderThickness="0,0,0,1">
+            <Grid>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="#1BEB28" CornerRadius="6" Width="34" Height="34" Margin="0,0,10,0">
+                        <TextBlock Text="🛠️" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock FontSize="15" FontWeight="Bold" Foreground="#E8F5E9"
+                                   Text="AUTOCARE - SERVICE MANAGER WORKSPACE"/>
+                        <TextBlock FontSize="11" Foreground="#7FBD88" Text="Vehicle Service Management"/>
+                    </StackPanel>
+                </StackPanel>
+                <TextBlock FontSize="13" Foreground="#4A7A55" HorizontalAlignment="Right"
+                           Text="Passcode: 0002" VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- Low Stock Alert -->
+        <Border Background="#1A0A0A" BorderBrush="#E74C3C" BorderThickness="1.5"
+                CornerRadius="5" Grid.Row="1" Margin="15,10,15,5" Padding="10"
+                Visibility="Collapsed" x:Name="LowStockAlertBorder"
+                MouseDown="LowStockAlertBorder_MouseDown" Cursor="Hand">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock FontSize="14" FontWeight="Bold" Foreground="#E74C3C" Text="⚠️ LOW STOCK ALERT:  "/>
+                <TextBlock FontSize="14" Foreground="#E74C3C"
+                           Text="Some spare parts are below the minimum stock level! (Click to filter)"
+                           x:Name="TxtAlertMessage"/>
+            </StackPanel>
+        </Border>
+
+        <!-- TabControl -->
+        <TabControl Background="#132B1A" Grid.Row="2" Margin="15,10,15,15"
+                    BorderBrush="#2A5C35" BorderThickness="1">
+
+            <!-- ══════════════════════════════════════════════
+                 TAB 1 — Inventory Control
+            ══════════════════════════════════════════════ -->
+            <TabItem Header="📦 Inventory Control">
+                <Grid Margin="10" Background="#0A1A0F">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="47*"/>
+                        <RowDefinition Height="120*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="56.2"/>
+                        <ColumnDefinition Width="233.8"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left Panel -->
+                    <Border Background="#132B1A" Grid.Column="0" Margin="0,0,10,0"
+                            Padding="15" BorderBrush="#2A5C35" BorderThickness="1"
+                            CornerRadius="6" Grid.ColumnSpan="2" Grid.RowSpan="2">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <!-- Panel Title -->
+                                <Border BorderBrush="#1BEB28" BorderThickness="3,0,0,0" Padding="8,0" Margin="0,0,0,12">
+                                    <TextBlock FontSize="14" FontWeight="SemiBold" Foreground="#1BEB28"
+                                               Text="Inventory Control Panel"/>
+                                </Border>
+
+                                <TextBlock FontSize="11" Foreground="#4A7A55" x:Name="LblSelectedID"
+                                           Text="Selected ID: None" Margin="0,0,0,8"/>
+
+                                <TextBlock FontSize="12" Foreground="#7FBD88" Margin="0,5,0,3" Text="Item Name:"/>
+                                <TextBox Height="28" VerticalContentAlignment="Center" x:Name="TxtItemName"/>
+
+                                <TextBlock FontSize="12" Foreground="#7FBD88" Margin="0,8,0,3" Text="Quantity:"/>
+                                <TextBox Height="28" VerticalContentAlignment="Center" x:Name="TxtQuantity"/>
+
+                                <TextBlock FontSize="12" Foreground="#7FBD88" Margin="0,8,0,3" Text="Min Stock Level:"/>
+                                <TextBox Height="28" VerticalContentAlignment="Center" x:Name="TxtMinLevel"/>
+
+                                <TextBlock FontSize="12" Foreground="#7FBD88" Margin="0,8,0,3" Text="Unit Price (Rs.):"/>
+                                <TextBox Height="28" VerticalContentAlignment="Center" x:Name="TxtPrice"/>
+
+                                <Button Background="#27AE60" Click="BtnAddItem_Click"
+                                        Content="➕  Add Item" FontWeight="Bold" Foreground="White"
+                                        Height="32" Margin="0,15,0,5" x:Name="BtnAddItem"
+                                        BorderThickness="0" Cursor="Hand"/>
+
+                                <UniformGrid Columns="2" Margin="0,2,0,5">
+                                    <Button Background="#E67E22" Click="BtnUpdateItem_Click"
+                                            Content="📝  Update" FontWeight="Bold" Foreground="White"
+                                            Height="32" Margin="0,0,3,0" x:Name="BtnUpdate"
+                                            BorderThickness="0" Cursor="Hand"/>
+                                    <Button Background="#C0392B" Click="BtnDeleteItem_Click"
+                                            Content="🗑️  Delete" FontWeight="Bold" Foreground="White"
+                                            Height="32" Margin="3,0,0,0" x:Name="BtnDelete"
+                                            BorderThickness="0" Cursor="Hand"/>
+                                </UniformGrid>
+
+                                <Button Background="#3A4A3D" Click="BtnClearForm_Click"
+                                        Content="🔄  Clear / Reset" Foreground="#E8F5E9"
+                                        Height="28" Margin="0,2,0,5" x:Name="BtnClear"
+                                        BorderThickness="0" Cursor="Hand"/>
+
+                                <Separator Margin="0,15"/>
+
+                                <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="#7FBD88"
+                                           Margin="0,0,0,8" Text="Data Import / Export (CSV)"/>
+                                <Button Background="#2980B9" Click="BtnImport_Click"
+                                        Content="📥  Import from CSV" FontWeight="Bold" Foreground="White"
+                                        Height="32" Margin="0,0,0,6" x:Name="BtnImport"
+                                        BorderThickness="0" Cursor="Hand"/>
+                                <Button Background="#8E44AD" Click="BtnExport_Click"
+                                        Content="📤  Export to CSV" FontWeight="Bold" Foreground="White"
+                                        Height="32" x:Name="BtnExport"
+                                        BorderThickness="0" Cursor="Hand"/>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+
+                    <!-- Inventory DataGrid -->
+                    <DataGrid AutoGenerateColumns="False" CanUserAddRows="False"
+                              Grid.Column="2" x:Name="DgvInventory"
+                              MouseDoubleClick="DgvInventory_MouseDoubleClick"
+                              IsReadOnly="True" SelectionMode="Single" Grid.RowSpan="2">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding ItemID}"    Header="Item ID"        Width="70"/>
+                            <DataGridTextColumn Binding="{Binding ItemName}"  Header="Item Name"      Width="*"/>
+                            <DataGridTextColumn Binding="{Binding Quantity}"  Header="Qty Available"  Width="110"/>
+                            <DataGridTextColumn Binding="{Binding MinStockLevel}" Header="Min Level"  Width="100"/>
+                            <DataGridTextColumn Binding="{Binding UnitPrice}" Header="Unit Price (Rs)" Width="130"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <!-- ══════════════════════════════════════════════
+                 TAB 2 — Job Allocation & Tracking
+            ══════════════════════════════════════════════ -->
+            <TabItem Header="🔧 Job Allocation &amp; Tracking">
+                <Grid Margin="10" Background="#0A1A0F">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="29*"/>
+                        <RowDefinition Height="472*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="300"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left Panel -->
+                    <Border Grid.Column="0" Background="#132B1A" Margin="0,0,10,0"
+                            Padding="15" BorderBrush="#2A5C35" BorderThickness="1"
+                            CornerRadius="6" Grid.RowSpan="2">
+                        <StackPanel>
+                            <Border BorderBrush="#1BEB28" BorderThickness="3,0,0,0" Padding="8,0" Margin="0,0,0,12">
+                                <TextBlock FontSize="14" FontWeight="SemiBold" Foreground="#1BEB28"
+                                           Text="Job Allocation"/>
+                            </Border>
+
+                            <TextBlock x:Name="LblSelectedJobID" Text="Selected Job ID: None"
+                                       FontWeight="SemiBold" Foreground="#4A7A55" Margin="0,0,0,12"/>
+
+                            <TextBlock Text="Vehicle Number:" Foreground="#7FBD88" FontSize="12"/>
+                            <TextBox x:Name="TxtJobVehicle" Height="28" Margin="0,3,0,10"/>
+
+                            <TextBlock Text="Issue Description:" Foreground="#7FBD88" FontSize="12"/>
+                            <TextBox x:Name="TxtJobIssue" Height="28" Margin="0,3,0,10"/>
+
+                            <TextBlock Text="Mechanic:" Foreground="White"/>
+                            <ComboBox x:Name="CmbMechanics" Height="28" Margin="0,0,0,10"
+                                      Foreground="#0D47A1" Background="White" BorderBrush="#BDC3C7" FocusVisualStyle="{x:Null}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" Foreground="#0D47A1"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                                <!-- Ensure selected item text remains visible by controlling item container styles -->
+                                <ComboBox.ItemContainerStyle>
+                                    <Style TargetType="ComboBoxItem">
+                                        <Setter Property="Background" Value="#2E7D32"/>
+                                        <Setter Property="Foreground" Value="#0D47A1"/>
+                                        <Setter Property="Padding" Value="4"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#388E3C"/>
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Background" Value="#1B5E20"/>
+                                                <Setter Property="Foreground" Value="#0D47A1"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ComboBox.ItemContainerStyle>
+                            </ComboBox>
+
+                            <TextBlock Text="Status:" Foreground="White"/>
+                            <ComboBox x:Name="CmbStatus" Height="28" Margin="0,0,0,10" 
+                                      Foreground="#4DA6FF" Background="#27AE60" BorderBrush="#1B5E20" FocusVisualStyle="{x:Null}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" Foreground="#0D47A1"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                                <ComboBox.ItemContainerStyle>
+                                    <Style TargetType="ComboBoxItem">
+                                        <Setter Property="Background" Value="#2E7D32"/>
+                                        <Setter Property="Foreground" Value="#4DA6FF"/>
+                                        <Setter Property="Padding" Value="4"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#388E3C"/>
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Background" Value="#1B5E20"/>
+                                                <Setter Property="Foreground" Value="#0D47A1"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ComboBox.ItemContainerStyle>
+                                <sys:String>Pending</sys:String>
+                                <sys:String>Ongoing</sys:String>
+                                <sys:String>Completed</sys:String>
+                            </ComboBox>
+
+                            <Button Content="✔  Assign / Update Job" Click="BtnAssignJob_Click"
+                                    Background="#2980B9" Foreground="White" Height="35"
+                                    Margin="0,0,0,6" BorderThickness="0" Cursor="Hand"/>
+                            <Button Content="🔄  Clear Form" Click="BtnClearJobForm_Click"
+                                    Background="#3A4A3D" Foreground="#E8F5E9" Height="35"
+                                    BorderThickness="0" Cursor="Hand"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Jobs DataGrid -->
+                    <DataGrid Grid.Column="1" x:Name="DgvJobs" AutoGenerateColumns="False"
+                              MouseDoubleClick="DgvJobs_MouseDoubleClick"
+                              SelectionChanged="DgvJobs_SelectionChanged"
+                              Margin="0,0,0,0" Grid.RowSpan="2">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding JobID}"          Header="ID"       Width="60"/>
+                            <DataGridTextColumn Binding="{Binding VehicleNumber}"  Header="Vehicle"  Width="150"/>
+                            <DataGridTextColumn Binding="{Binding AssignedMechanic}" Header="Mechanic" Width="160"/>
+                            <DataGridTextColumn Binding="{Binding IssueDescription}" Header="Issue"  Width="*"/>
+                            <DataGridTextColumn Binding="{Binding Status}"         Header="Status"   Width="100"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <!-- ══════════════════════════════════════════════
+                 TAB 3 — Reports & Insights
+            ══════════════════════════════════════════════ -->
+            <TabItem Header="📊 Reports &amp; Insights">
+                <Grid Background="#0A1A0F">
+                    <StackPanel Margin="20">
+                        <!-- Title -->
+                        <Border BorderBrush="#1BEB28" BorderThickness="3,0,0,0" Padding="10,0" Margin="0,0,0,16">
+                            <TextBlock Text="Management Reports" FontSize="18" FontWeight="Bold"
+                                       Foreground="#1BEB28"/>
+                        </Border>
+
+                        <!-- Filter Row -->
+                        <Border Background="#132B1A" BorderBrush="#2A5C35" BorderThickness="1"
+                                CornerRadius="6" Padding="14" Margin="0,0,0,20">
+                            <StackPanel Orientation="Horizontal">
+                                <StackPanel Margin="0,0,14,0">
+                                    <TextBlock Text="Month" Foreground="#7FBD88" FontSize="11" Margin="0,0,0,4"/>
+                                    <ComboBox x:Name="CmbMonth" Width="100" Margin="0,0,10,0" SelectedIndex="0" Foreground="Black">
+                                        <ComboBoxItem Content="1"/>
+                                        <ComboBoxItem Content="2"/>
+                                        <ComboBoxItem Content="3"/>
+                                        <ComboBoxItem Content="4"/>
+                                        <ComboBoxItem Content="5"/>
+                                        <ComboBoxItem Content="6"/>
+                                        <ComboBoxItem Content="7"/>
+                                        <ComboBoxItem Content="8"/>
+                                        <ComboBoxItem Content="9"/>
+                                        <ComboBoxItem Content="10"/>
+                                        <ComboBoxItem Content="11"/>
+                                        <ComboBoxItem Content="12"/>
+                                    </ComboBox>
+                                </StackPanel>
+                                <StackPanel Margin="0,0,14,0">
+                                    <TextBlock Text="Year" Foreground="#7FBD88" FontSize="11" Margin="0,0,0,4"/>
+                                    <TextBox x:Name="TxtYear" Width="80" Height="30"
+                                             Text="2026" VerticalContentAlignment="Center"/>
+                                </StackPanel>
+                                <Button Content="📄  Generate Report" Click="BtnGenerateReport_Click"
+                                        Background="#27AE60" Foreground="White"
+                                        Width="170" Height="30" Margin="6,18,8,0"
+                                        BorderThickness="0" Cursor="Hand" FontWeight="SemiBold"/>
+                                <Button Content="🔄  Refresh Statistics" Click="BtnToggleChart_Click"
+                                        Background="#3A4A3D" Foreground="#E8F5E9"
+                                        Width="170" Height="30" Margin="0,18,0,0"
+                                        BorderThickness="0" Cursor="Hand"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Chart Section -->
+                        <Border BorderBrush="#1BEB28" BorderThickness="3,0,0,0" Padding="10,0" Margin="0,0,0,10">
+                            <TextBlock Text="Job Status Distribution" FontSize="15" FontWeight="SemiBold"
+                                       Foreground="#E8F5E9"/>
+                        </Border>
+                        <Border Background="#132B1A" BorderBrush="#2A5C35" BorderThickness="1"
+                                CornerRadius="6" Padding="10">
+                            <lvc:PieChart x:Name="MyPieChart" Height="300" LegendLocation="Right"/>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
+        </TabControl>
     </Grid>
 </Page>
