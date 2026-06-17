@@ -142,7 +142,7 @@ namespace AutoCare.RoleBasedUI {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/AutoCare;V1.0.0.0;component/rolebasedui/systemadministrator.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/AutoCare;component/rolebasedui/systemadministrator.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\RoleBasedUI\SystemAdministrator.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

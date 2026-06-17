@@ -1,7 +1,28 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\Users\\kalpa\\OneDrive\\Desktop\\AutoCare-Service-Center-Management-System\\AutoCare\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{5C1FCB59-8CD5-4B35-86CB-D6380ECF9EB1}|AutoCare.csproj|c:\\users\\kalpa\\onedrive\\desktop\\autocare-service-center-management-system\\autocare\\rolebasedui\\servicemanager.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5C1FCB59-8CD5-4B35-86CB-D6380ECF9EB1}|AutoCare.csproj|solutionrelative:rolebasedui\\servicemanager.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5C1FCB59-8CD5-4B35-86CB-D6380ECF9EB1}|AutoCare.csproj|c:\\users\\kalpa\\onedrive\\desktop\\autocare-service-center-management-system\\autocare\\rolebasedui\\systemadministrator.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{5C1FCB59-8CD5-4B35-86CB-D6380ECF9EB1}|AutoCare.csproj|solutionrelative:rolebasedui\\systemadministrator.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5C1FCB59-8CD5-4B35-86CB-D6380ECF9EB1}|AutoCare.csproj|c:\\users\\kalpa\\onedrive\\desktop\\autocare-service-center-management-system\\autocare\\rolebasedui\\servicemanager.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{5C1FCB59-8CD5-4B35-86CB-D6380ECF9EB1}|AutoCare.csproj|solutionrelative:rolebasedui\\servicemanager.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5C1FCB59-8CD5-4B35-86CB-D6380ECF9EB1}|AutoCare.csproj|c:\\users\\kalpa\\onedrive\\desktop\\autocare-service-center-management-system\\autocare\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{5C1FCB59-8CD5-4B35-86CB-D6380ECF9EB1}|AutoCare.csproj|solutionrelative:mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5C1FCB59-8CD5-4B35-86CB-D6380ECF9EB1}|AutoCare.csproj|c:\\users\\kalpa\\onedrive\\desktop\\autocare-service-center-management-system\\autocare\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5C1FCB59-8CD5-4B35-86CB-D6380ECF9EB1}|AutoCare.csproj|solutionrelative:mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -9,7 +30,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
@@ -17,11 +38,69 @@
             },
             {
               "$type": "Bookmark",
-              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
             },
             {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ServiceManager.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\kalpa\\OneDrive\\Desktop\\AutoCare-Service-Center-Management-System\\AutoCare\\RoleBasedUI\\ServiceManager.xaml.cs",
+              "RelativeDocumentMoniker": "RoleBasedUI\\ServiceManager.xaml.cs",
+              "ToolTip": "C:\\Users\\kalpa\\OneDrive\\Desktop\\AutoCare-Service-Center-Management-System\\AutoCare\\RoleBasedUI\\ServiceManager.xaml.cs*",
+              "RelativeToolTip": "RoleBasedUI\\ServiceManager.xaml.cs*",
+              "ViewState": "AgIAAEQCAAAAAAAAAAAwwGQCAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-17T05:31:50.095Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "SystemAdministrator.xaml",
+              "DocumentMoniker": "C:\\Users\\kalpa\\OneDrive\\Desktop\\AutoCare-Service-Center-Management-System\\AutoCare\\RoleBasedUI\\SystemAdministrator.xaml",
+              "RelativeDocumentMoniker": "RoleBasedUI\\SystemAdministrator.xaml",
+              "ToolTip": "C:\\Users\\kalpa\\OneDrive\\Desktop\\AutoCare-Service-Center-Management-System\\AutoCare\\RoleBasedUI\\SystemAdministrator.xaml",
+              "RelativeToolTip": "RoleBasedUI\\SystemAdministrator.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-06-17T05:27:59.73Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ServiceManager.xaml",
+              "DocumentMoniker": "C:\\Users\\kalpa\\OneDrive\\Desktop\\AutoCare-Service-Center-Management-System\\AutoCare\\RoleBasedUI\\ServiceManager.xaml",
+              "RelativeDocumentMoniker": "RoleBasedUI\\ServiceManager.xaml",
+              "ToolTip": "C:\\Users\\kalpa\\OneDrive\\Desktop\\AutoCare-Service-Center-Management-System\\AutoCare\\RoleBasedUI\\ServiceManager.xaml",
+              "RelativeToolTip": "RoleBasedUI\\ServiceManager.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-06-17T05:23:17.198Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "MainWindow.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\kalpa\\OneDrive\\Desktop\\AutoCare-Service-Center-Management-System\\AutoCare\\MainWindow.xaml.cs",
+              "RelativeDocumentMoniker": "MainWindow.xaml.cs",
+              "ToolTip": "C:\\Users\\kalpa\\OneDrive\\Desktop\\AutoCare-Service-Center-Management-System\\AutoCare\\MainWindow.xaml.cs",
+              "RelativeToolTip": "MainWindow.xaml.cs",
+              "ViewState": "AgIAAAUBAAAAAAAAAAAwwCUBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-17T05:13:04.357Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "MainWindow.xaml",
+              "DocumentMoniker": "C:\\Users\\kalpa\\OneDrive\\Desktop\\AutoCare-Service-Center-Management-System\\AutoCare\\MainWindow.xaml",
+              "RelativeDocumentMoniker": "MainWindow.xaml",
+              "ToolTip": "C:\\Users\\kalpa\\OneDrive\\Desktop\\AutoCare-Service-Center-Management-System\\AutoCare\\MainWindow.xaml",
+              "RelativeToolTip": "MainWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-06-17T05:04:17.645Z",
+              "EditorCaption": ""
             }
           ]
         }

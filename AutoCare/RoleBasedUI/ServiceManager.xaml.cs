@@ -43,6 +43,30 @@ namespace AutoCare.RoleBasedUI
             UpdateChartData();
         }
 
+        #region 🔐 LOGOUT
+
+        private void BtnLogout_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // TODO: If your main window class isn't named "MainWindow" (or lives in a
+                // different namespace), update the line below to match.
+                var mainWindow = new MainWindow();
+                Application.Current.MainWindow = mainWindow;
+                mainWindow.Show();
+
+                // Close whichever window is currently hosting this page
+                Window.GetWindow(this)?.Close();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                MessageBox.Show("An unexpected error occurred during logout. The error has been logged.");
+            }
+        }
+
+        #endregion
+
         private void BtnDebugDate_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -89,12 +113,31 @@ namespace AutoCare.RoleBasedUI
 
         private void LowStockAlertBorder_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            // Add your logic here, for example:
-            // This is often used to toggle visibility or filter the DataGrid
-            if (LowStockAlertBorder.Visibility == Visibility.Visible)
+            try
             {
-                // Example logic:
-                // MessageBox.Show("Low stock alert clicked!");
+                var allItems = _inventoryService.GetAllItems() ?? new List<InventoryItem>();
+
+                if (!isFiltered)
+                {
+                    // Show only the low-stock items
+                    var lowStockItems = allItems.Where(i => i.Quantity <= i.MinStockLevel).ToList();
+                    DgvInventory.ItemsSource = lowStockItems;
+                    TxtAlertMessage.Text = $"Showing {lowStockItems.Count} low stock item(s) only. (Click to show all)";
+                    isFiltered = true;
+                }
+                else
+                {
+                    // Restore the full inventory list
+                    DgvInventory.ItemsSource = allItems;
+                    int lowStockCount = allItems.Count(i => i.Quantity <= i.MinStockLevel);
+                    TxtAlertMessage.Text = $"{lowStockCount} item(s) are below the minimum stock level! (Click to filter)";
+                    isFiltered = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                MessageBox.Show("An unexpected error occurred while filtering inventory. The error has been logged.");
             }
         }
         #region 🔧 JOB ALLOCATION & TRACKING LOGIC
@@ -369,10 +412,30 @@ namespace AutoCare.RoleBasedUI
 
                 // 3. නව ලැයිස්තුව නැවත පවරන්න
                 DgvInventory.ItemsSource = items;
+
+                // 4. Refresh the low-stock alert banner based on the freshly loaded data
+                isFiltered = false;
+                UpdateLowStockAlert(items);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error loading inventory: {ex.Message}");
+            }
+        }
+
+        private void UpdateLowStockAlert(IEnumerable<InventoryItem> items)
+        {
+            var lowStockItems = items?.Where(i => i.Quantity <= i.MinStockLevel).ToList()
+                                 ?? new List<InventoryItem>();
+
+            if (lowStockItems.Count > 0)
+            {
+                LowStockAlertBorder.Visibility = Visibility.Visible;
+                TxtAlertMessage.Text = $"{lowStockItems.Count} item(s) are below the minimum stock level! (Click to filter)";
+            }
+            else
+            {
+                LowStockAlertBorder.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -436,7 +499,7 @@ namespace AutoCare.RoleBasedUI
             }
         }
 
-        
+
 
         private void BtnClearForm_Click(object sender, RoutedEventArgs e)
         {
@@ -547,8 +610,3 @@ namespace AutoCare.RoleBasedUI
 
     }
 }
-
-        
-        
-
-    

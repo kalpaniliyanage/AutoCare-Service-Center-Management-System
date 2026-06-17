@@ -326,7 +326,7 @@ namespace AutoCare.RoleBasedUI {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/AutoCare;V1.0.0.0;component/rolebasedui/casier.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/AutoCare;component/rolebasedui/casier.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\RoleBasedUI\casier.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

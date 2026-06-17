@@ -1,9 +1,3 @@
-C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\AutoCare.csproj.AssemblyReference.cache
-C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\AutoCare.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\AutoCare.AssemblyInfoInputs.cache
-C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\AutoCare.AssemblyInfo.cs
-C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\AutoCare.csproj.CoreCompileInputs.cache
-C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\AutoCare.sourcelink.json
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\AutoCare.exe
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\AutoCare.deps.json
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\AutoCare.runtimeconfig.json
@@ -11,6 +5,8 @@ C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCa
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\AutoCare.pdb
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\Databasic.dll
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\HarfBuzzSharp.dll
+C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\LiveCharts.dll
+C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\LiveCharts.Wpf.dll
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\LiveChartsCore.dll
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\LiveChartsCore.SkiaSharpView.dll
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\LiveChartsCore.SkiaSharpView.WPF.dll
@@ -67,8 +63,8 @@ C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCa
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\runtimes\win-arm64\native\e_sqlite3.dll
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\runtimes\win-x64\native\e_sqlite3.dll
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\runtimes\win-x86\native\e_sqlite3.dll
+C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\AutoCare.csproj.AssemblyReference.cache
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\MainWindow.baml
-C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\RoleBasedUI\casier.baml
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\RoleBasedUI\Receptionist.baml
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\RoleBasedUI\ServiceManager.baml
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\RoleBasedUI\SystemAdministrator.baml
@@ -79,7 +75,14 @@ C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCa
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\RoleBasedUI\SystemAdministrator.g.cs
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\App.g.cs
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\AutoCare_MarkupCompile.cache
+C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\AutoCare_MarkupCompile.lref
+C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\RoleBasedUI\casier.baml
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\AutoCare.g.resources
+C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\AutoCare.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\AutoCare.AssemblyInfoInputs.cache
+C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\AutoCare.AssemblyInfo.cs
+C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\AutoCare.csproj.CoreCompileInputs.cache
+C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\AutoCare.sourcelink.json
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\AutoCare.csproj.Up2Date
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\AutoCare.dll
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\obj\Debug\net9.0-windows\refint\AutoCare.dll

@@ -126,8 +126,16 @@
                         <TextBlock FontSize="11" Foreground="#7FBD88" Text="Vehicle Service Management"/>
                     </StackPanel>
                 </StackPanel>
-                <TextBlock FontSize="13" Foreground="#4A7A55" HorizontalAlignment="Right"
-                           Text="Passcode: 0002" VerticalAlignment="Center"/>
+
+                <!-- Right side: Passcode + Logout -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <TextBlock FontSize="13" Foreground="#4A7A55" VerticalAlignment="Center"
+                               Margin="0,0,15,0" Text="Passcode: 0002"/>
+                    <Button x:Name="BtnLogout" Click="BtnLogout_Click"
+                            Background="#C0392B" Foreground="White" FontWeight="Bold"
+                            BorderThickness="0" Cursor="Hand" Padding="14,6"
+                            Content="🚪  Logout"/>
+                </StackPanel>
             </Grid>
         </Border>
 

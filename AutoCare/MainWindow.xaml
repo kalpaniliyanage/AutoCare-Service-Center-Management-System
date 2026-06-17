@@ -4,250 +4,707 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="AutoCare Premier Service Suite v1.0" 
-        Height="650" Width="1200" 
+        Title="AutoCare Premier Service Suite v1.0"
+        Height="720" Width="1300"
+        MinHeight="640" MinWidth="1050"
         WindowStartupLocation="CenterScreen"
-        Background="#F4F7F6">
+        Foreground="#F0FDF4"
+        FontFamily="Segoe UI"
+        TextOptions.TextFormattingMode="Display">
 
     <Window.Resources>
-        <DropShadowEffect x:Key="CardShadow" BlurRadius="15" Color="#CCCCCC" Direction="270" ShadowDepth="3" Opacity="0.5"/>
-        <DropShadowEffect x:Key="IconShadow" BlurRadius="8" Color="#AAAAAA" Direction="270" ShadowDepth="2" Opacity="0.4"/>
 
-        <Style x:Key="RoleCard" TargetType="Border">
-            <Setter Property="Background" Value="#D6EAD7"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="BorderBrush" Value="#B4D9B6"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Margin" Value="12,10,12,20"/>
-            <Setter Property="Padding" Value="15,55,15,15"/>
-            <Setter Property="Effect" Value="{StaticResource CardShadow}"/>
-        </Style>
-
-        <Style x:Key="WorkspaceButton" TargetType="Button">
-            <Setter Property="Background" Value="#5CB85C"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontSize" Value="15"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Height" Value="40"/>
+        <!-- Enter Workspace Button -->
+        <Style x:Key="EnterBtn" TargetType="Button">
+            <Setter Property="Background"      Value="#4ADE80"/>
+            <Setter Property="Foreground"      Value="#052E16"/>
+            <Setter Property="FontWeight"      Value="Bold"/>
+            <Setter Property="FontSize"        Value="13"/>
+            <Setter Property="Height"          Value="44"/>
             <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor"          Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border x:Name="Root"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="10"
+                                Padding="14,0">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="#22C55E"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="#16A34A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#4CAE4C"/>
-                    <Setter Property="Cursor" Value="Hand"/>
-                </Trigger>
-            </Style.Triggers>
         </Style>
+
+        <!-- Feature item text -->
+        <Style x:Key="FeatTxt" TargetType="TextBlock">
+            <Setter Property="Foreground"        Value="#A7F3D0"/>
+            <Setter Property="FontSize"          Value="13"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="TextWrapping"      Value="Wrap"/>
+        </Style>
+
+        <!-- Role tag pill text -->
+        <Style x:Key="TagTxt" TargetType="TextBlock">
+            <Setter Property="Foreground"  Value="#4ADE80"/>
+            <Setter Property="FontSize"    Value="10"/>
+            <Setter Property="FontWeight"  Value="Bold"/>
+        </Style>
+
     </Window.Resources>
 
-    <Grid>
-        <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden" Panel.ZIndex="10" Navigated="MainFrame_Navigated"/>
+    <!-- ROOT -->
+    <Grid Background="#0A1A0A"
+          TextElement.Foreground="#F0FDF4">
 
-        <Grid Panel.ZIndex="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="30"/>
-            </Grid.RowDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="72"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="36"/>
+        </Grid.RowDefinitions>
 
-            <Border Grid.Row="0" Background="White" BorderBrush="#CBE3CE" BorderThickness="0,0,0,2" Padding="20,15">
+        <!-- Frame overlay -->
+        <Frame x:Name="MainFrame"
+               Grid.RowSpan="4"
+               NavigationUIVisibility="Hidden"
+               Panel.ZIndex="10"
+               Navigated="MainFrame_Navigated"/>
+
+        <!-- ═══════════════════════════════════
+             ROW 0 · TOP NAV BAR
+        ═══════════════════════════════════ -->
+        <Border Grid.Row="0"
+                Background="#111F11"
+                BorderThickness="0,0,0,1"
+                BorderBrush="#1E3A1E">
+            <Grid Margin="30,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Brand -->
+                <StackPanel Grid.Column="0"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
+                    <Border Width="48" Height="48"
+                            CornerRadius="14"
+                            Background="#166534"
+                            BorderBrush="#4ADE80"
+                            BorderThickness="1.5"
+                            Margin="0,0,14,0">
+                        <TextBlock Text="🚗"
+                                   FontSize="26"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="AutoCare"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="#F0FDF4"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Premier Service Suite"
+                                       FontSize="11"
+                                       Foreground="#4ADE80"/>
+                            <Border Background="#14532D"
+                                    CornerRadius="4"
+                                    Padding="5,1"
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center">
+                                <TextBlock Text="v 1.0"
+                                           FontSize="10"
+                                           FontWeight="Bold"
+                                           Foreground="#4ADE80"/>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Centre title -->
+                <StackPanel Grid.Column="1"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="AutoCare Premier Service Suite"
+                               FontSize="23"
+                               FontWeight="Bold"
+                               Foreground="#F0FDF4"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="VEHICLE SERVICE  &amp;  BUSINESS MANAGEMENT SYSTEM"
+                               FontSize="11"
+                               FontWeight="SemiBold"
+                               Foreground="#4ADE80"
+                               HorizontalAlignment="Center"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <!-- Right: status + date -->
+                <StackPanel Grid.Column="2"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Right">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Ellipse Width="8" Height="8"
+                                 Fill="#4ADE80"
+                                 VerticalAlignment="Center"
+                                 Margin="0,0,7,0"/>
+                        <TextBlock Text="System Online"
+                                   Foreground="#86EFAC"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock x:Name="txtDate"
+                               Text="Wednesday, 4 June 2026"
+                               Foreground="#4ADE8066"
+                               FontSize="11"
+                               HorizontalAlignment="Right"
+                               Margin="0,5,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ═══════════════════════════════════
+             ROW 1 · HERO BANNER
+        ═══════════════════════════════════ -->
+        <Border Grid.Row="1"
+                Background="#0F1F0F"
+                BorderThickness="0,0,0,1"
+                BorderBrush="#1E3A1E"
+                Padding="30,18,30,20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left heading -->
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                        <Border Width="4" Height="24"
+                                CornerRadius="2"
+                                Background="#4ADE80"
+                                Margin="0,0,12,0"
+                                VerticalAlignment="Center"/>
+                        <TextBlock Text="Select Your Role"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   Foreground="#F0FDF4"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Text="Each workspace is tailored with the exact tools your role needs. Choose below to get started."
+                               FontSize="12"
+                               Foreground="#4ADE8077"
+                               Margin="16,0,0,0"/>
+                </StackPanel>
+
+                <!-- Right stat pills -->
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
+
+                    <Border Background="#0F2A1A"
+                            CornerRadius="10"
+                            BorderBrush="#166534"
+                            BorderThickness="1"
+                            Padding="14,8"
+                            Margin="0,0,10,0">
+                        <StackPanel>
+                            <TextBlock Text="4"
+                                       FontSize="22"
+                                       FontWeight="Bold"
+                                       Foreground="#4ADE80"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="Roles"
+                                       FontSize="11"
+                                       Foreground="#86EFAC"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="#0F2A1A"
+                            CornerRadius="10"
+                            BorderBrush="#166534"
+                            BorderThickness="1"
+                            Padding="14,8"
+                            Margin="0,0,10,0">
+                        <StackPanel>
+                            <TextBlock Text="🔒"
+                                       FontSize="22"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="Secured"
+                                       FontSize="11"
+                                       Foreground="#86EFAC"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="#0F2A1A"
+                            CornerRadius="10"
+                            BorderBrush="#166534"
+                            BorderThickness="1"
+                            Padding="14,8">
+                        <StackPanel>
+                            <TextBlock Text="🟢"
+                                       FontSize="18"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="Live"
+                                       FontSize="11"
+                                       Foreground="#86EFAC"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ═══════════════════════════════════
+             ROW 2 · ROLE CARDS
+        ═══════════════════════════════════ -->
+        <UniformGrid Grid.Row="2"
+                     Columns="4"
+                     Margin="22,18,22,18">
+
+            <!-- ─── CARD 1 · System Administrator ─── -->
+            <Border Background="#152515"
+                    CornerRadius="18"
+                    BorderBrush="#2A4A2A"
+                    BorderThickness="1"
+                    Margin="0,0,10,0"
+                    Padding="24,24,24,22">
                 <Grid>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0">
-                        <Border Width="60" Height="60" CornerRadius="30" Background="Transparent" VerticalAlignment="Center">
-                            <Image Source="logo.jpeg" Stretch="UniformToFill"/>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Icon + tag -->
+                    <Grid Grid.Row="0" Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0"
+                                Width="56" Height="56"
+                                CornerRadius="16"
+                                Background="#0D2B1A"
+                                BorderBrush="#166534"
+                                BorderThickness="1.5">
+                            <TextBlock Text="⚙️" FontSize="30"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
                         </Border>
+                        <Border Grid.Column="1"
+                                Background="#14532D"
+                                CornerRadius="8"
+                                Padding="9,4"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Bottom"
+                                Margin="0,0,0,4">
+                            <TextBlock Text="ADMIN" Style="{StaticResource TagTxt}"/>
+                        </Border>
+                    </Grid>
+
+                    <TextBlock Grid.Row="1"
+                               Text="System Administrator"
+                               FontSize="17" FontWeight="Bold"
+                               Foreground="#F0FDF4"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,5"/>
+
+                    <TextBlock Grid.Row="2"
+                               Text="User Management, Settings &amp; DB Backup"
+                               FontSize="12" Foreground="#86EFAC"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,14"/>
+
+                    <!-- Gradient divider -->
+                    <Border Grid.Row="3" Height="1" Margin="0,0,0,14">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#4ADE80" Offset="0"/>
+                                <GradientStop Color="#0A1A0A"  Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+
+                    <StackPanel Grid.Row="4" Margin="0,0,0,20">
+                        <StackPanel Orientation="Horizontal" Margin="0,6">
+                            <TextBlock Text="✓" Foreground="#4ADE80" FontWeight="Bold" Width="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="Manage Users &amp; Roles"    Style="{StaticResource FeatTxt}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,6">
+                            <TextBlock Text="✓" Foreground="#4ADE80" FontWeight="Bold" Width="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="System Configuration"        Style="{StaticResource FeatTxt}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,6">
+                            <TextBlock Text="✓" Foreground="#4ADE80" FontWeight="Bold" Width="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="Data Backup &amp; Restore"   Style="{StaticResource FeatTxt}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,6">
+                            <TextBlock Text="✓" Foreground="#4ADE80" FontWeight="Bold" Width="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="Access Logs &amp; Analytics" Style="{StaticResource FeatTxt}"/>
+                        </StackPanel>
                     </StackPanel>
 
-                    <StackPanel HorizontalAlignment="Center" TextBlock.TextAlignment="Center">
-                        <TextBlock Text="AutoCare Premier Service Suite" FontSize="28" FontWeight="Bold" Foreground="#1A1A1A"/>
-                        <TextBlock Text="VEHICLE SERVICE &amp; BUSINESS MANAGEMENT SYSTEM" FontSize="13" FontWeight="Bold" Foreground="#4A4A4A" Margin="0,4,0,2"/>
-                        <TextBlock Text="Wednesday, June 3, 2026" FontSize="12" Foreground="#666666" FontStyle="Italic"/>
-                    </StackPanel>
+                    <Button Grid.Row="5"
+                            Content="⚙  Enter Workspace"
+                            Style="{StaticResource EnterBtn}"
+                            Click="BtnAdmin_Click"/>
                 </Grid>
             </Border>
 
-            <Grid Grid.Row="1" Margin="20,40,20,10">
+            <!-- ─── CARD 2 · Receptionist ─── -->
+            <Border Background="#152515"
+                    CornerRadius="18"
+                    BorderBrush="#2A4A2A"
+                    BorderThickness="1"
+                    Margin="5,0,5,0"
+                    Padding="24,24,24,22">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0"
+                                Width="56" Height="56"
+                                CornerRadius="16"
+                                Background="#0D2B1A"
+                                BorderBrush="#166534"
+                                BorderThickness="1.5">
+                            <TextBlock Text="🧑‍💼" FontSize="30"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Border>
+                        <Border Grid.Column="1"
+                                Background="#14532D"
+                                CornerRadius="8"
+                                Padding="9,4"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Bottom"
+                                Margin="0,0,0,4">
+                            <TextBlock Text="FRONT DESK" Style="{StaticResource TagTxt}"/>
+                        </Border>
+                    </Grid>
+
+                    <TextBlock Grid.Row="1"
+                               Text="Receptionist"
+                               FontSize="17" FontWeight="Bold"
+                               Foreground="#F0FDF4"
+                               Margin="0,0,0,5"/>
+
+                    <TextBlock Grid.Row="2"
+                               Text="Front Desk &amp; Customer Care"
+                               FontSize="12" Foreground="#86EFAC"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,14"/>
+
+                    <Border Grid.Row="3" Height="1" Margin="0,0,0,14">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#4ADE80" Offset="0"/>
+                                <GradientStop Color="#0A1A0A"  Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+
+                    <StackPanel Grid.Row="4" Margin="0,0,0,20">
+                        <StackPanel Orientation="Horizontal" Margin="0,6">
+                            <TextBlock Text="✓" Foreground="#4ADE80" FontWeight="Bold" Width="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="Register New Customer" Style="{StaticResource FeatTxt}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,6">
+                            <TextBlock Text="✓" Foreground="#4ADE80" FontWeight="Bold" Width="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="Book Appointments"     Style="{StaticResource FeatTxt}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,6">
+                            <TextBlock Text="✓" Foreground="#4ADE80" FontWeight="Bold" Width="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="Create Job Cards"      Style="{StaticResource FeatTxt}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,6">
+                            <TextBlock Text="✓" Foreground="#4ADE80" FontWeight="Bold" Width="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="Service History"       Style="{StaticResource FeatTxt}"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Button Grid.Row="5"
+                            Content="🧑‍💼  Enter Reception Desk"
+                            Style="{StaticResource EnterBtn}"
+                            Click="BtnReceptionist_Click"/>
+                </Grid>
+            </Border>
+
+            <!-- ─── CARD 3 · Service Manager ─── -->
+            <Border Background="#152515"
+                    CornerRadius="18"
+                    BorderBrush="#2A4A2A"
+                    BorderThickness="1"
+                    Margin="5,0,5,0"
+                    Padding="24,24,24,22">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0"
+                                Width="56" Height="56"
+                                CornerRadius="16"
+                                Background="#0D2B1A"
+                                BorderBrush="#166534"
+                                BorderThickness="1.5">
+                            <TextBlock Text="🔧" FontSize="30"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Border>
+                        <Border Grid.Column="1"
+                                Background="#14532D"
+                                CornerRadius="8"
+                                Padding="9,4"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Bottom"
+                                Margin="0,0,0,4">
+                            <TextBlock Text="WORKSHOP" Style="{StaticResource TagTxt}"/>
+                        </Border>
+                    </Grid>
+
+                    <TextBlock Grid.Row="1"
+                               Text="Service Manager"
+                               FontSize="17" FontWeight="Bold"
+                               Foreground="#F0FDF4"
+                               Margin="0,0,0,5"/>
+
+                    <TextBlock Grid.Row="2"
+                               Text="Workflow &amp; Job Control"
+                               FontSize="12" Foreground="#86EFAC"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,14"/>
+
+                    <Border Grid.Row="3" Height="1" Margin="0,0,0,14">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#4ADE80" Offset="0"/>
+                                <GradientStop Color="#0A1A0A"  Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+
+                    <StackPanel Grid.Row="4" Margin="0,0,0,20">
+                        <StackPanel Orientation="Horizontal" Margin="0,6">
+                            <TextBlock Text="✓" Foreground="#4ADE80" FontWeight="Bold" Width="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="Assign Mechanic to Jobs"    Style="{StaticResource FeatTxt}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,6">
+                            <TextBlock Text="✓" Foreground="#4ADE80" FontWeight="Bold" Width="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="View Job Status"             Style="{StaticResource FeatTxt}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,6">
+                            <TextBlock Text="✓" Foreground="#4ADE80" FontWeight="Bold" Width="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="Order Parts &amp; Inventory" Style="{StaticResource FeatTxt}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,6">
+                            <TextBlock Text="✓" Foreground="#4ADE80" FontWeight="Bold" Width="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="Generate Service Reports"    Style="{StaticResource FeatTxt}"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Button Grid.Row="5"
+                            Content="🔧  Enter Workspace"
+                            Style="{StaticResource EnterBtn}"
+                            Click="BtnServiceManager_Click"/>
+                </Grid>
+            </Border>
+
+            <!-- ─── CARD 4 · Cashier / Accountant ─── -->
+            <Border Background="#152515"
+                    CornerRadius="18"
+                    BorderBrush="#2A4A2A"
+                    BorderThickness="1"
+                    Margin="10,0,0,0"
+                    Padding="24,24,24,22">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0"
+                                Width="56" Height="56"
+                                CornerRadius="16"
+                                Background="#0D2B1A"
+                                BorderBrush="#166534"
+                                BorderThickness="1.5">
+                            <TextBlock Text="💰" FontSize="30"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Border>
+                        <Border Grid.Column="1"
+                                Background="#14532D"
+                                CornerRadius="8"
+                                Padding="9,4"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Bottom"
+                                Margin="0,0,0,4">
+                            <TextBlock Text="FINANCE" Style="{StaticResource TagTxt}"/>
+                        </Border>
+                    </Grid>
+
+                    <TextBlock Grid.Row="1"
+                               Text="Cashier / Accountant"
+                               FontSize="17" FontWeight="Bold"
+                               Foreground="#F0FDF4"
+                               Margin="0,0,0,5"/>
+
+                    <TextBlock Grid.Row="2"
+                               Text="Billing &amp; Payments"
+                               FontSize="12" Foreground="#86EFAC"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,14"/>
+
+                    <Border Grid.Row="3" Height="1" Margin="0,0,0,14">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#4ADE80" Offset="0"/>
+                                <GradientStop Color="#0A1A0A"  Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+
+                    <StackPanel Grid.Row="4" Margin="0,0,0,20">
+                        <StackPanel Orientation="Horizontal" Margin="0,6">
+                            <TextBlock Text="✓" Foreground="#4ADE80" FontWeight="Bold" Width="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="Create Customer Invoice"      Style="{StaticResource FeatTxt}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,6">
+                            <TextBlock Text="✓" Foreground="#4ADE80" FontWeight="Bold" Width="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="Process Payments"             Style="{StaticResource FeatTxt}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,6">
+                            <TextBlock Text="✓" Foreground="#4ADE80" FontWeight="Bold" Width="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="Daily Financial Summary"      Style="{StaticResource FeatTxt}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,6">
+                            <TextBlock Text="✓" Foreground="#4ADE80" FontWeight="Bold" Width="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="Print Invoices (PDF/Thermal)" Style="{StaticResource FeatTxt}"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Button Grid.Row="5"
+                            Content="💰  Enter Workspace"
+                            Style="{StaticResource EnterBtn}"
+                            Click="BtnCashier_Click"/>
+                </Grid>
+            </Border>
+
+        </UniformGrid>
+
+        <!-- ═══════════════════════════════════
+             ROW 3 · STATUS BAR
+        ═══════════════════════════════════ -->
+        <Border Grid.Row="3"
+                Background="#111F11"
+                BorderThickness="0,1,0,0"
+                BorderBrush="#1E3A1E"
+                Padding="30,0">
+            <Grid VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <Grid Grid.Column="0">
-                    <Border Style="{StaticResource RoleCard}">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Text="System Administrator" FontSize="18" FontWeight="Bold" Foreground="#111111" HorizontalAlignment="Center" Margin="0,10,0,2"/>
-                            <TextBlock Grid.Row="1" Text="User Management, Settings, DB Backup" FontSize="14" Foreground="#444444" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,15"/>
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Ellipse Width="7" Height="7" Fill="#4ADE80" Margin="0,0,6,0"/>
+                    <TextBlock Text="Database: Connected" Foreground="#86EFAC" FontSize="11"/>
+                </StackPanel>
 
-                            <StackPanel Grid.Row="2" VerticalAlignment="Top" Margin="5,0">
-                                <StackPanel Orientation="Horizontal" Margin="0,6">
-                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Manage Users" FontSize="13" Foreground="#222222"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,6">
-                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
-                                    <TextBlock Text="System Configuration" FontSize="13" Foreground="#222222"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,6">
-                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Data Backup &amp; Restore" FontSize="13" Foreground="#222222"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,6">
-                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Access Logs" FontSize="13" Foreground="#222222"/>
-                                </StackPanel>
-                            </StackPanel>
-                            <Button Grid.Row="3" Content="Enter WorkSpace" Style="{StaticResource WorkspaceButton}" Click="BtnAdmin_Click"/>
-                        </Grid>
-                    </Border>
-                    <Ellipse Width="64" Height="64" Fill="White" Stroke="#B4D9B6" StrokeThickness="2" VerticalAlignment="Top" Margin="0,15,0,0" Effect="{StaticResource IconShadow}"/>
-                    <Image Source="https://cdn-icons-png.flaticon.com/512/2202/2202112.png" Width="45" Height="45" VerticalAlignment="Top" Margin="0,25,0,0"/>
-                </Grid>
+                <Border Grid.Column="1" Width="1" Background="#1E3A1E" Margin="14,5"/>
 
-                <Grid Grid.Column="1">
-                    <Border Style="{StaticResource RoleCard}">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Text="Receptionist" FontSize="18" FontWeight="Bold" Foreground="#111111" HorizontalAlignment="Center" Margin="0,10,0,2"/>
-                            <TextBlock Grid.Row="1" Text="Front Desk &amp; Customer Care" FontSize="14" Foreground="#444444" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,15"/>
+                <TextBlock Grid.Column="2" Text="Offline Mode Active"
+                           Foreground="#4ADE8066" FontSize="11" VerticalAlignment="Center"/>
 
-                            <StackPanel Grid.Row="2" VerticalAlignment="Top" Margin="5,0">
-                                <StackPanel Orientation="Horizontal" Margin="0,6">
-                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Register New Customer" FontSize="13" Foreground="#222222"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,6">
-                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Book Appointments" FontSize="13" Foreground="#222222"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,6">
-                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Create Job Cards" FontSize="13" Foreground="#222222"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,6">
-                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Service History" FontSize="13" Foreground="#222222"/>
-                                </StackPanel>
-                            </StackPanel>
-                            <Button Grid.Row="3" Content="Enter Reception Desk" Style="{StaticResource WorkspaceButton}" Click="BtnReceptionist_Click"/>
-                        </Grid>
-                    </Border>
-                    <Ellipse Width="64" Height="64" Fill="White" Stroke="#B4D9B6" StrokeThickness="2" VerticalAlignment="Top" Margin="0,15,0,0" Effect="{StaticResource IconShadow}"/>
-                    <Image Source="https://cdn-icons-png.flaticon.com/512/6997/6997662.png" Width="45" Height="45" VerticalAlignment="Top" Margin="0,25,0,0"/>
-                </Grid>
+                <Border Grid.Column="3" Width="1" Background="#1E3A1E" Margin="14,5"/>
 
-                <Grid Grid.Column="2">
-                    <Border Style="{StaticResource RoleCard}">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Text="Service Manager" FontSize="18" FontWeight="Bold" Foreground="#111111" HorizontalAlignment="Center" Margin="0,10,0,2"/>
-                            <TextBlock Grid.Row="1" Text="Workflow &amp; Job Control" FontSize="14" Foreground="#444444" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,15"/>
+                <TextBlock Grid.Column="4" Text="Station: Counter 1"
+                           Foreground="#86EFAC" FontSize="11" VerticalAlignment="Center"/>
 
-                            <StackPanel Grid.Row="2" VerticalAlignment="Top" Margin="5,0">
-                                <StackPanel Orientation="Horizontal" Margin="0,6">
-                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Assign Mechanic to Jobs" FontSize="13" Foreground="#222222"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,6">
-                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
-                                    <TextBlock Text="View Job Status" FontSize="13" Foreground="#222222"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,6">
-                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Order Parts &amp; Inventory" FontSize="13" Foreground="#222222"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,6">
-                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Generate Service Reports" FontSize="13" Foreground="#222222"/>
-                                </StackPanel>
-                            </StackPanel>
-                            <Button Grid.Row="3" Content="Enter WorkSpace" Style="{StaticResource WorkspaceButton}" Click="BtnServiceManager_Click"/>
-                        </Grid>
-                    </Border>
-                    <Ellipse Width="64" Height="64" Fill="White" Stroke="#B4D9B6" StrokeThickness="2" VerticalAlignment="Top" Margin="0,15,0,0" Effect="{StaticResource IconShadow}"/>
-                    <Image Source="https://cdn-icons-png.flaticon.com/512/3062/3062541.png" Width="41" Height="41" VerticalAlignment="Top" Margin="0,27,0,0"/>
-                </Grid>
+                <Border Grid.Column="5" Width="1" Background="#1E3A1E" Margin="14,5"/>
 
-                <Grid Grid.Column="3">
-                    <Border Style="{StaticResource RoleCard}">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Text="Cashier / Accountant" FontSize="18" FontWeight="Bold" Foreground="#111111" HorizontalAlignment="Center" Margin="0,10,0,2"/>
-                            <TextBlock Grid.Row="1" Text="Billing &amp; Payments" FontSize="14" Foreground="#444444" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,15"/>
+                <TextBlock Grid.Column="6" Text="Server: Localhost"
+                           Foreground="#86EFAC" FontSize="11" VerticalAlignment="Center"/>
 
-                            <StackPanel Grid.Row="2" VerticalAlignment="Top" Margin="5,0">
-                                <StackPanel Orientation="Horizontal" Margin="0,6">
-                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Create Customer Invoice" FontSize="13" Foreground="#222222"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,6">
-                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Process Payments" FontSize="13" Foreground="#222222"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,6">
-                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Daily Financial Summary" FontSize="13" Foreground="#222222"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,6">
-                                    <TextBlock Text="✓" Foreground="#2E7D32" FontWeight="Bold" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Print Invoices (PDF/Thermal)" FontSize="13" Foreground="#222222"/>
-                                </StackPanel>
-                            </StackPanel>
-                            <Button Grid.Row="3" Content="Enter WorkSpace" Style="{StaticResource WorkspaceButton}" Click="BtnCashier_Click"/>
-                        </Grid>
-                    </Border>
-                    <Ellipse Width="64" Height="64" Fill="White" Stroke="#B4D9B6" StrokeThickness="2" VerticalAlignment="Top" Margin="0,15,0,0" Effect="{StaticResource IconShadow}"/>
-                    <Image Source="https://cdn-icons-png.flaticon.com/512/2489/2489756.png" Width="43" Height="43" VerticalAlignment="Top" Margin="0,26,0,0"/>
-                </Grid>
+                <Border Grid.Column="7" Width="1" Background="#1E3A1E" Margin="14,5"/>
+
+                <TextBlock Grid.Column="8"
+                           Text="AutoCare Vehicle Service Management  •  All Rights Reserved"
+                           Foreground="#4ADE8033" FontSize="11" VerticalAlignment="Center"/>
+
+                <Border Grid.Column="9"
+                        Background="#14532D"
+                        CornerRadius="6"
+                        Padding="10,3"
+                        BorderBrush="#166534"
+                        BorderThickness="1"
+                        VerticalAlignment="Center">
+                    <TextBlock Text="v 1.0"
+                               Foreground="#4ADE80"
+                               FontSize="11"
+                               FontWeight="Bold"/>
+                </Border>
+
             </Grid>
+        </Border>
 
-            <StatusBar Grid.Row="2" Background="#EAEAEA" BorderBrush="#CCCCCC" BorderThickness="0,1,0,0">
-                <StatusBarItem Margin="5,0">
-                    <TextBlock Text="Database: Connected (Offline mode active)" FontSize="11.5" Foreground="#333333"/>
-                </StatusBarItem>
-                <Separator Background="#BBBBBB" Width="1" Margin="5,3"/>
-                <StatusBarItem>
-                    <TextBlock Text="Station: Counter 1" FontSize="11.5" Foreground="#333333"/>
-                </StatusBarItem>
-                <Separator Background="#BBBBBB" Width="1" Margin="5,3"/>
-                <StatusBarItem>
-                    <TextBlock Text="Server: Localhost" FontSize="11.5" Foreground="#333333"/>
-                </StatusBarItem>
-                <Separator Background="#BBBBBB" Width="1" Margin="5,3"/>
-                <StatusBarItem>
-                    <TextBlock Text="v1.0" FontSize="11.5" Foreground="#333333"/>
-                </StatusBarItem>
-            </StatusBar>
-        </Grid>
     </Grid>
 </Window>
