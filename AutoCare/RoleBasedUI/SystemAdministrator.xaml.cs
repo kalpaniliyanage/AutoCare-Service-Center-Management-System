@@ -438,10 +438,17 @@ namespace AutoCare.RoleBasedUI
                 };
 
                 // Pie chart data
+                // Pie chart: most-requested services from JobCards
                 var pieSeries = new List<ISeries>();
                 int colorIndex = 0;
                 var serviceChartCmd = conn.CreateCommand();
-                serviceChartCmd.CommandText = "SELECT ServiceName, COUNT(*) AS Total FROM Services GROUP BY ServiceName";
+                serviceChartCmd.CommandText = @"
+                        SELECT s.ServiceName, COUNT(jc.JobCardID) AS Total
+                        FROM Services s
+                        INNER JOIN JobCards jc ON jc.ServiceID = s.ServiceID
+                        GROUP BY s.ServiceID, s.ServiceName
+                        ORDER BY Total DESC
+                        LIMIT 8";
                 using (var sr = serviceChartCmd.ExecuteReader())
                 {
                     while (sr.Read())
@@ -456,7 +463,7 @@ namespace AutoCare.RoleBasedUI
                             DataLabelsPaint = pieLabelPaint,
                             DataLabelsSize = 12,
                             DataLabelsPosition = LiveChartsCore.Measure.PolarLabelsPosition.Outer,
-                            DataLabelsFormatter = p => $"{p.Coordinate.PrimaryValue:0}"
+                            DataLabelsFormatter = p => $"{p.Coordinate.PrimaryValue:0} jobs"
                         });
                     }
                 }
