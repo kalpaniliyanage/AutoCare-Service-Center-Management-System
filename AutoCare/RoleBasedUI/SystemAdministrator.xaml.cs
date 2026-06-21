@@ -626,30 +626,281 @@ namespace AutoCare.RoleBasedUI
             try
             {
                 GlobalFontSettings.UseWindowsFontsUnderWindows = true;
+
                 var save = new SaveFileDialog
                 {
                     Filter = "PDF Files (*.pdf)|*.pdf",
-                    FileName = $"AutoCare_Report_{DateTime.Now:yyyyMMdd}.pdf"
+                    FileName = $"AutoCare_Report_{DateTime.Now:yyyyMMdd_HHmm}.pdf"
                 };
-                if (save.ShowDialog() == true)
-                {
-                    var document = new PdfDocument();
-                    document.Info.Title = "AutoCare Monthly Report";
-                    var page = document.AddPage();
-                    page.Size = PdfSharp.PageSize.A4;
-                    var gfx = XGraphics.FromPdfPage(page);
-                    var titleFont = new XFont("Verdana", 18, XFontStyleEx.Bold);
-                    var bodyFont = new XFont("Verdana", 10, XFontStyleEx.Regular);
-                    gfx.DrawString("AutoCare Report", titleFont, XBrushes.Black, new XPoint(30, 30));
-                    gfx.DrawString($"Generated : {DateTime.Now}", bodyFont, XBrushes.Black, new XPoint(30, 60));
-                    document.Save(save.FileName);
+                if (save.ShowDialog() != true) return;
 
-                    LogAction("System Administrator", $"Exported PDF Report: {Path.GetFileName(save.FileName)}");
-                    LoadLogs();
-                    LoadDashboard();
-                    MessageBox.Show("PDF Report Generated Successfully!", "AutoCare",
-                                    MessageBoxButton.OK, MessageBoxImage.Information);
+                // ── Pull all data from DB ─────────────────────────────────
+                int totalJobs = 0, completedJobs = 0, pendingJobs = 0,
+                    inProgressJobs = 0, invoiceCount = 0, paidCount = 0, unpaidCount = 0;
+                double totalRevenue = 0, totalServiceCost = 0, totalMaterialCost = 0, paidRevenue = 0;
+                var topServices = new List<(string Name, int Count)>();
+                var recentJobs = new List<(string VehicleNo, string Status, string Date)>();
+
+                using (var conn = DatabaseHelper.GetConnection())
+                {
+                    var cmd = conn.CreateCommand();
+
+                    cmd.CommandText = "SELECT COUNT(*) FROM JobCards";
+                    totalJobs = Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+
+                    cmd.CommandText = "SELECT COUNT(*) FROM JobCards WHERE JobStatus = 'Completed'";
+                    completedJobs = Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+
+                    cmd.CommandText = "SELECT COUNT(*) FROM JobCards WHERE JobStatus = 'Pending'";
+                    pendingJobs = Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+
+                    cmd.CommandText = "SELECT COUNT(*) FROM JobCards WHERE JobStatus = 'In Progress'";
+                    inProgressJobs = Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+
+                    cmd.CommandText = "SELECT COUNT(*) FROM Invoices";
+                    invoiceCount = Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+
+                    cmd.CommandText = "SELECT COUNT(*) FROM Invoices WHERE PaymentStatus = 'Paid'";
+                    paidCount = Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+
+                    cmd.CommandText = "SELECT COUNT(*) FROM Invoices WHERE PaymentStatus = 'Unpaid'";
+                    unpaidCount = Convert.ToInt32(cmd.ExecuteScalar() ?? 0);
+
+                    cmd.CommandText = "SELECT IFNULL(SUM(TotalAmount),0) FROM Invoices";
+                    totalRevenue = Convert.ToDouble(cmd.ExecuteScalar() ?? 0);
+
+                    cmd.CommandText = "SELECT IFNULL(SUM(TotalAmount),0) FROM Invoices WHERE PaymentStatus = 'Paid'";
+                    paidRevenue = Convert.ToDouble(cmd.ExecuteScalar() ?? 0);
+
+                    cmd.CommandText = "SELECT IFNULL(SUM(ServiceCost),0) FROM Invoices";
+                    totalServiceCost = Convert.ToDouble(cmd.ExecuteScalar() ?? 0);
+
+                    cmd.CommandText = "SELECT IFNULL(SUM(MaterialCost),0) FROM Invoices";
+                    totalMaterialCost = Convert.ToDouble(cmd.ExecuteScalar() ?? 0);
+
+                    cmd.CommandText = @"
+                SELECT s.ServiceName, COUNT(jc.JobCardID) AS Total
+                FROM Services s
+                INNER JOIN JobCards jc ON jc.ServiceID = s.ServiceID
+                GROUP BY s.ServiceID, s.ServiceName
+                ORDER BY Total DESC LIMIT 5";
+                    using (var r = cmd.ExecuteReader())
+                        while (r.Read())
+                            topServices.Add((r["ServiceName"]?.ToString() ?? "—", Convert.ToInt32(r["Total"])));
+
+                    cmd.CommandText = @"
+                SELECT VehicleNo, JobStatus, DateReceived
+                FROM JobCards
+                ORDER BY JobCardID DESC LIMIT 6";
+                    using (var r2 = cmd.ExecuteReader())
+                        while (r2.Read())
+                            recentJobs.Add((
+                                r2["VehicleNo"]?.ToString() ?? "—",
+                                r2["JobStatus"]?.ToString() ?? "—",
+                                r2["DateReceived"]?.ToString() ?? "—"
+                            ));
                 }
+
+                // ── System colour palette ─────────────────────────────────
+                var colDarkGreen = XColor.FromArgb(15, 26, 15);   // #0F1A0F  header bg
+                var colGreen = XColor.FromArgb(74, 222, 128);   // #4ADE80  accent
+                var colGreenDim = XColor.FromArgb(34, 85, 34);   // section bar
+                var colSky = XColor.FromArgb(56, 189, 248);   // #38BDF8  blue accent
+                var colAmber = XColor.FromArgb(251, 191, 36);   // #FBBf24  warning
+                var colRed = XColor.FromArgb(248, 113, 113);    // #F87171  unpaid
+                var colLightGray = XColor.FromArgb(240, 240, 240);    // card bg
+                var colMidGray = XColor.FromArgb(180, 180, 180);
+                var colWhite = XColors.White;
+                var colBlack = XColors.Black;
+
+                var brDarkGreen = new XSolidBrush(colDarkGreen);
+                var brGreen = new XSolidBrush(colGreen);
+                var brGreenDim = new XSolidBrush(colGreenDim);
+                var brSky = new XSolidBrush(colSky);
+                var brAmber = new XSolidBrush(colAmber);
+                var brRed = new XSolidBrush(colRed);
+                var brLightGray = new XSolidBrush(colLightGray);
+                var brWhite = new XSolidBrush(colWhite);
+                var brBlack = new XSolidBrush(colBlack);
+                var brMidGray = new XSolidBrush(colMidGray);
+
+                // ── Fonts ─────────────────────────────────────────────────
+                var fntHero = new XFont("Verdana", 22, XFontStyleEx.Bold);
+                var fntSub = new XFont("Verdana", 9, XFontStyleEx.Regular);
+                var fntSec = new XFont("Verdana", 11, XFontStyleEx.Bold);
+                var fntBody = new XFont("Verdana", 10, XFontStyleEx.Regular);
+                var fntBold = new XFont("Verdana", 10, XFontStyleEx.Bold);
+                var fntSmall = new XFont("Verdana", 8, XFontStyleEx.Regular);
+                var fntKpiNum = new XFont("Verdana", 18, XFontStyleEx.Bold);
+                var fntKpiLbl = new XFont("Verdana", 8, XFontStyleEx.Regular);
+
+                // ── Page setup ────────────────────────────────────────────
+                var document = new PdfDocument();
+                document.Info.Title = "AutoCare Service Center Report";
+                document.Info.Author = "System Administrator";
+
+                var page = document.AddPage();
+                page.Size = PdfSharp.PageSize.A4;
+                var gfx = XGraphics.FromPdfPage(page);
+                double W = page.Width.Point;   // ~595
+                double H = page.Height.Point;  // ~842
+                double lm = 30;                 // left margin
+                double rm = W - 30;             // right margin
+                double y = 0;
+
+                // ── HEADER BAND ───────────────────────────────────────────
+                gfx.DrawRectangle(brDarkGreen, 0, 0, W, 72);
+                // Green left accent bar
+                gfx.DrawRectangle(brGreen, 0, 0, 6, 72);
+                gfx.DrawString("AutoCare Service Center", fntHero, brGreen,
+                                new XRect(lm + 10, 10, W, 40), XStringFormats.TopLeft);
+                gfx.DrawString("Management System  —  Business Performance Report", fntSub,
+                                new XSolidBrush(colMidGray),
+                                new XRect(lm + 10, 40, W, 20), XStringFormats.TopLeft);
+                gfx.DrawString($"Generated: {DateTime.Now:dd MMM yyyy  HH:mm}   |   By: System Administrator",
+                                fntSmall, new XSolidBrush(colMidGray),
+                                new XRect(lm + 10, 55, W, 16), XStringFormats.TopLeft);
+                y = 82;
+
+                // ── Helper: draw a section header bar ────────────────────
+                void SectionBar(string label, string icon)
+                {
+                    gfx.DrawRectangle(brGreenDim, lm, y, rm - lm, 20);
+                    gfx.DrawString($"  {icon}  {label}", fntSec, brGreen,
+                                    new XRect(lm + 4, y + 3, rm - lm, 20), XStringFormats.TopLeft);
+                    y += 24;
+                }
+
+                // ── Helper: draw a KPI card ───────────────────────────────
+                void KpiCard(double x, double cardY, double cw, double ch,
+                             string num, string label, XSolidBrush accent)
+                {
+                    gfx.DrawRectangle(brLightGray, x, cardY, cw, ch);
+                    gfx.DrawRectangle(accent, x, cardY, 4, ch);            // left colour bar
+                    gfx.DrawString(num, fntKpiNum, brDarkGreen,
+                                   new XRect(x + 8, cardY + 6, cw - 10, ch / 2), XStringFormats.TopLeft);
+                    gfx.DrawString(label, fntKpiLbl, brMidGray,
+                                   new XRect(x + 8, cardY + ch - 18, cw - 10, 16), XStringFormats.TopLeft);
+                }
+
+                // ── SECTION 1: JOB CARD KPIs (4 cards) ───────────────────
+                SectionBar("Job Card Overview", "[JOBS]");
+                double cardH = 54;
+                double cardW = (rm - lm - 9) / 4;
+                double cx = lm;
+                KpiCard(cx, y, cardW, cardH, totalJobs.ToString(), "Total Jobs", brGreen);
+                KpiCard(cx + cardW + 3, y, cardW, cardH, completedJobs.ToString(), "Completed", brSky);
+                KpiCard(cx + (cardW + 3) * 2, y, cardW, cardH, inProgressJobs.ToString(), "In Progress", brAmber);
+                KpiCard(cx + (cardW + 3) * 3, y, cardW, cardH, pendingJobs.ToString(), "Pending", brRed);
+                y += cardH + 12;
+
+                // ── SECTION 2: REVENUE KPIs (4 cards) ────────────────────
+                SectionBar("Invoice & Revenue Summary", "[REVENUE]");
+                KpiCard(cx, y, cardW, cardH, invoiceCount.ToString(), "Total Invoices", brGreen);
+                KpiCard(cx + cardW + 3, y, cardW, cardH, $"Rs {totalRevenue / 1000:0.0}k", "Total Revenue", brSky);
+                KpiCard(cx + (cardW + 3) * 2, y, cardW, cardH, paidCount.ToString(), "Paid Invoices", brGreen);
+                KpiCard(cx + (cardW + 3) * 3, y, cardW, cardH, unpaidCount.ToString(), "Unpaid Invoices", brRed);
+                y += cardH + 12;
+
+                // ── SECTION 3: REVENUE BREAKDOWN TABLE ───────────────────
+                SectionBar("Revenue Breakdown", "[BREAKDOWN]");
+                void TableRow(string col1, string col2, bool isHeader)
+                {
+                    var bg = isHeader ? brGreenDim : brLightGray;
+                    var fg = isHeader ? brGreen : brBlack;
+                    var fn = isHeader ? fntBold : fntBody;
+                    gfx.DrawRectangle(bg, lm, y, rm - lm, 16);
+                    gfx.DrawString(col1, fn, fg, new XRect(lm + 6, y + 2, (rm - lm) * 0.6, 14), XStringFormats.TopLeft);
+                    gfx.DrawString(col2, fn, fg, new XRect(lm + (rm - lm) * 0.62, y + 2, (rm - lm) * 0.36, 14), XStringFormats.TopLeft);
+                    y += 17;
+                }
+                TableRow("Revenue Item", "Amount (LKR)", true);
+                TableRow("Total Service Cost", $"Rs {totalServiceCost:N2}", false);
+                TableRow("Total Material Cost", $"Rs {totalMaterialCost:N2}", false);
+                TableRow("Total Invoice Revenue", $"Rs {totalRevenue:N2}", false);
+                TableRow("Collected (Paid)", $"Rs {paidRevenue:N2}", false);
+                TableRow("Outstanding (Unpaid)", $"Rs {(totalRevenue - paidRevenue):N2}", false);
+                y += 10;
+
+                // ── SECTION 4: TOP SERVICES ───────────────────────────────
+                SectionBar("Top 5 Most Requested Services", "[SERVICES]");
+                if (topServices.Count == 0)
+                {
+                    gfx.DrawString("  No service data available yet.", fntBody, brMidGray,
+                                    new XRect(lm, y, rm - lm, 16), XStringFormats.TopLeft);
+                    y += 20;
+                }
+                else
+                {
+                    // Find max for bar scaling
+                    int maxVal = topServices[0].Count;
+                    double barMaxW = rm - lm - 160;
+                    foreach (var (svcName, svcCount) in topServices)
+                    {
+                        gfx.DrawString($"{svcName}", fntBody, brBlack,
+                                        new XRect(lm + 4, y + 1, 150, 14), XStringFormats.TopLeft);
+                        double barW = maxVal > 0 ? (svcCount / (double)maxVal) * barMaxW : 0;
+                        gfx.DrawRectangle(brGreenDim, lm + 158, y + 2, barMaxW, 12);
+                        gfx.DrawRectangle(brGreen, lm + 158, y + 2, barW, 12);
+                        gfx.DrawString($"{svcCount} job(s)", fntSmall, brBlack,
+                                        new XRect(lm + 162 + barMaxW, y + 2, 60, 12), XStringFormats.TopLeft);
+                        y += 18;
+                    }
+                }
+                y += 10;
+
+                // ── SECTION 5: RECENT JOB CARDS TABLE ────────────────────
+                SectionBar("Recent Job Cards", "[RECENT]");
+                void JobRow(string v, string s, string d, bool header)
+                {
+                    var bg = header ? brGreenDim : brLightGray;
+                    var fg = header ? brGreen : brBlack;
+                    var fn = header ? fntBold : fntBody;
+                    gfx.DrawRectangle(bg, lm, y, rm - lm, 16);
+
+                    // Status colour dot
+                    if (!header)
+                    {
+                        var dotBr = s == "Completed" ? brGreen : s == "In Progress" ? brAmber : brRed;
+                        gfx.DrawEllipse(dotBr, lm + (rm - lm) * 0.42 + 2, y + 4, 8, 8);
+                    }
+
+                    gfx.DrawString(v, fn, fg, new XRect(lm + 6, y + 2, (rm - lm) * 0.38, 14), XStringFormats.TopLeft);
+                    gfx.DrawString(s, fn, fg, new XRect(lm + (rm - lm) * 0.42 + 14, y + 2, (rm - lm) * 0.30, 14), XStringFormats.TopLeft);
+                    gfx.DrawString(d, fn, fg, new XRect(lm + (rm - lm) * 0.72, y + 2, (rm - lm) * 0.26, 14), XStringFormats.TopLeft);
+                    y += 17;
+                }
+                JobRow("Vehicle No.", "Status", "Date Received", true);
+                if (recentJobs.Count == 0)
+                {
+                    gfx.DrawString("  No job card data available.", fntBody, brMidGray,
+                                    new XRect(lm, y, rm - lm, 16), XStringFormats.TopLeft);
+                    y += 20;
+                }
+                else
+                {
+                    foreach (var (v, s, d) in recentJobs)
+                        JobRow(v, s, d, false);
+                }
+                y += 14;
+
+                // ── FOOTER ────────────────────────────────────────────────
+                double footerY = H - 30;
+                gfx.DrawLine(new XPen(colGreenDim, 1), lm, footerY, rm, footerY);
+                gfx.DrawString(
+                    $"AutoCare Vehicle Service Center Management System  |  Confidential  |  {DateTime.Now:yyyy}",
+                    fntSmall, brMidGray,
+                    new XRect(lm, footerY + 4, rm - lm, 16), XStringFormats.TopLeft);
+                gfx.DrawString("Page 1", fntSmall, brMidGray,
+                    new XRect(0, footerY + 4, rm - 5, 16), XStringFormats.TopRight);
+
+                // ── Save ──────────────────────────────────────────────────
+                document.Save(save.FileName);
+                LogAction("System Administrator", $"Exported PDF Report: {Path.GetFileName(save.FileName)}");
+                LoadLogs();
+                LoadDashboard();
+                MessageBox.Show("PDF Report Generated Successfully!", "AutoCare",
+                                MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
