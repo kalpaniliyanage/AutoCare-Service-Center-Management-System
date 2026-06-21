@@ -51,12 +51,12 @@ namespace AutoCare
 
                     CREATE TABLE IF NOT EXISTS JobCards (
                         JobCardID INTEGER PRIMARY KEY AUTOINCREMENT,
-                        VehicleNo TEXT NOT NULL,
+                        VehicleNo TEXT,
                         ServiceID INTEGER NOT NULL,
                         MechanicName TEXT,
                         DateReceived TEXT NOT NULL,
                         JobStatus TEXT DEFAULT 'Pending',
-                        FOREIGN KEY (VehicleNo) REFERENCES Vehicles(VehicleNo),
+                        FOREIGN KEY (VehicleNo) REFERENCES Vehicles(VehicleNo) ON DELETE SET NULL,
                         FOREIGN KEY (ServiceID) REFERENCES Services(ServiceID)
                     );
 
@@ -375,6 +375,66 @@ namespace AutoCare
                 {
                     transaction.Rollback();
                     throw; // App.xaml.cs එකට වැරැද්ද පාස් කිරීම
+                }
+            }
+        }
+
+        // Call this from InitializeDatabase() after tables are created.
+        private static void EnsureDatabaseTriggers(SqliteConnection connection)
+        {
+            string[] cmds = new[]
+            {
+        // Drop any existing triggers first so we can recreate correct ones
+        "DROP TRIGGER IF EXISTS trg_jobcards_insert;",
+        "DROP TRIGGER IF EXISTS trg_jobcards_update;",
+        "DROP TRIGGER IF EXISTS trg_jobcards_delete;",
+
+        // Create correct JobCards triggers using JobCardID / JobStatus
+        @"CREATE TRIGGER trg_jobcards_insert
+          AFTER INSERT ON JobCards
+          BEGIN
+            INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+            VALUES ('Service Manager',
+                    'Created Job Card #' || NEW.JobCardID,
+                    datetime('now','localtime'));
+          END;",
+
+        @"CREATE TRIGGER trg_jobcards_update
+          AFTER UPDATE ON JobCards
+          BEGIN
+            INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+            VALUES ('Service Manager',
+                    'Updated Job Card #' || NEW.JobCardID || ' - Status: ' || NEW.JobStatus,
+                    datetime('now','localtime'));
+          END;",
+
+        @"CREATE TRIGGER trg_jobcards_delete
+          AFTER DELETE ON JobCards
+          BEGIN
+            INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+            VALUES ('Service Manager',
+                    'Deleted Job Card #' || OLD.JobCardID,
+                    datetime('now','localtime'));
+          END;"
+    };
+
+            using (var cmd = connection.CreateCommand())
+            using (var transaction = connection.BeginTransaction())
+            {
+                try
+                {
+                    cmd.Transaction = transaction;
+                    foreach (var sql in cmds)
+                    {
+                        cmd.CommandText = sql;
+                        cmd.ExecuteNonQuery();
+                    }
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    System.Diagnostics.Debug.WriteLine("EnsureDatabaseTriggers failed: " + ex.Message);
                 }
             }
         }

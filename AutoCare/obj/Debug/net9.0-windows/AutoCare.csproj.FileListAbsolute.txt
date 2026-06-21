@@ -1,3 +1,4 @@
+C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\runtimes\win-x86\native\libSkiaSharp.dll
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\AutoCare.exe
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\AutoCare.deps.json
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\AutoCare.runtimeconfig.json
@@ -39,7 +40,6 @@ C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCa
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\runtimes\osx\native\libSkiaSharp.dylib
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\runtimes\win-arm64\native\libSkiaSharp.dll
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\runtimes\win-x64\native\libSkiaSharp.dll
-C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\runtimes\win-x86\native\libSkiaSharp.dll
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\runtimes\browser-wasm\nativeassets\net9.0\e_sqlite3.a
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\runtimes\linux-arm\native\libe_sqlite3.so
 C:\Users\kalpa\OneDrive\Desktop\AutoCare-Service-Center-Management-System\AutoCare\bin\Debug\net9.0-windows\runtimes\linux-arm64\native\libe_sqlite3.so

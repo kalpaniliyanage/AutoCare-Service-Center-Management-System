@@ -628,11 +628,16 @@
                                            Style="{StaticResource SectionHeader}"/>
                             </StackPanel>
 
+                            <!--
+                                FIX: Removed XAxes="{Binding RevenueXAxes}" and
+                                     YAxes="{Binding RevenueYAxes}" — these properties
+                                     don't exist on the ViewModel. Axes are set directly
+                                     on the control in code-behind (LoadDashboard).
+                                     Series still binds to RevenueSeries via INotifyPropertyChanged.
+                            -->
                             <lvc:CartesianChart
                                 x:Name="RevenueChart"
                                 Series="{Binding RevenueSeries}"
-                                XAxes="{Binding RevenueXAxes}"
-                                YAxes="{Binding RevenueYAxes}"
                                 Height="260"
                                 Background="Transparent"/>
 
@@ -662,11 +667,16 @@
                                            Style="{StaticResource SectionHeader}"/>
                             </StackPanel>
 
+                            <!--
+                                FIX: Removed LegendTextPaint="{Binding LegendPaint}" —
+                                     LegendPaint property doesn't exist on the ViewModel.
+                                     LegendTextPaint is set directly in code-behind (LoadDashboard).
+                                     Series still binds to StatsSeries via INotifyPropertyChanged.
+                            -->
                             <lvc:PieChart
                                 x:Name="StatsChart"
                                 Series="{Binding StatsSeries}"
                                 LegendPosition="Right"
-                                LegendTextPaint="{Binding LegendPaint}"
                                 Height="260"
                                 Background="Transparent"/>
 
