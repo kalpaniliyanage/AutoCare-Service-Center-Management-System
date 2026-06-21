@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Data;
 using System.IO;
 using System.Windows;
@@ -15,6 +14,8 @@ using LiveChartsCore.SkiaSharpView.Painting;
 using SkiaSharp;
 using System.ComponentModel;
 using System.Windows.Threading;
+using System.Text.RegularExpressions;
+using Microsoft.Data.Sqlite;
 using TimersTimer = System.Timers.Timer;
 
 namespace AutoCare.RoleBasedUI
@@ -25,7 +26,7 @@ namespace AutoCare.RoleBasedUI
         private void OnPropertyChanged(string name) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
-        // NOTE: These paints are now created fresh on every LoadDashboard() call
+        // NOTE: These paints are created fresh on every LoadDashboard() call
         // instead of being static/shared. LiveCharts' SolidColorPaint holds a
         // reference to the SKPaint it creates for a specific canvas/draw cycle.
         // Reusing the same instance across repeated Series=null -> Series=new[]
@@ -76,9 +77,13 @@ namespace AutoCare.RoleBasedUI
             txtCurrentTime.Text = "🕒 " + DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm:ss");
             DataContext = this;
 
-            LogLoginEvent("System Administrator");
-
+            // _dbFile must be assigned before anything that touches the DB
             _dbFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "AutoCareDB.db");
+
+            // ── FIX: Nuke ALL triggers first so no malformed ones survive ──
+            NukeAllTriggers();
+            CreateDatabaseTriggers();
+            LogLoginEvent("System Administrator");
 
             try
             {
@@ -121,6 +126,182 @@ namespace AutoCare.RoleBasedUI
             };
             _pollTimer.Tick += PollTimer_Tick;
             _pollTimer.Start();
+        }
+
+        // ── Drops EVERY trigger in the database unconditionally.
+        // Called before CreateDatabaseTriggers() so stale / malformed triggers
+        // (e.g. those referencing NEW.CorrectColumnName placeholder text) can
+        // never block INSERT/UPDATE/DELETE operations on any table.
+        private void NukeAllTriggers()
+        {
+            try
+            {
+                using var conn = DatabaseHelper.GetConnection();
+
+                // Collect all trigger names first (can't drop while reader is open)
+                var listCmd = conn.CreateCommand();
+                listCmd.CommandText = "SELECT name FROM sqlite_master WHERE type = 'trigger';";
+                using var reader = listCmd.ExecuteReader();
+
+                var triggers = new List<string>();
+                while (reader.Read())
+                    triggers.Add(reader.GetString(0));
+
+                reader.Close();
+
+                // Drop every trigger found
+                foreach (var triggerName in triggers)
+                {
+                    try
+                    {
+                        var dropCmd = conn.CreateCommand();
+                        dropCmd.CommandText = $"DROP TRIGGER IF EXISTS \"{triggerName}\";";
+                        dropCmd.ExecuteNonQuery();
+                    }
+                    catch { /* ignore per-trigger drop errors */ }
+                }
+            }
+            catch { /* ignore — app still starts even if nuke fails */ }
+        }
+
+        // ── Creates (or refreshes) the SQLite triggers that auto-log
+        // Customers / Vehicles / JobCards / Invoices / Inventory changes
+        // into SystemLogs. Must be its own class-level method — it cannot
+        // be declared inside the constructor body.
+        private void CreateDatabaseTriggers()
+        {
+            try
+            {
+                using (var conn = DatabaseHelper.GetConnection())
+                {
+                    void Run(string sql)
+                    {
+                        try
+                        {
+                            using var c = conn.CreateCommand();
+                            c.CommandText = sql;
+                            c.ExecuteNonQuery();
+                        }
+                        catch { /* ignore per-trigger errors */ }
+                    }
+
+                    // Drop known triggers (safe: IF EXISTS) — belt-and-suspenders
+                    // after NukeAllTriggers(), but harmless to repeat.
+                    Run(@"
+                DROP TRIGGER IF EXISTS trg_customers_insert;
+                DROP TRIGGER IF EXISTS trg_customers_update;
+                DROP TRIGGER IF EXISTS trg_customers_delete;
+                DROP TRIGGER IF EXISTS trg_vehicles_insert;
+                DROP TRIGGER IF EXISTS trg_vehicles_update;
+                DROP TRIGGER IF EXISTS trg_vehicles_delete;
+                DROP TRIGGER IF EXISTS trg_jobcards_insert;
+                DROP TRIGGER IF EXISTS trg_jobcards_update;
+                DROP TRIGGER IF EXISTS trg_jobcards_delete;
+                DROP TRIGGER IF EXISTS trg_invoices_insert;
+                DROP TRIGGER IF EXISTS trg_invoices_update;
+                DROP TRIGGER IF EXISTS trg_invoices_delete;
+                DROP TRIGGER IF EXISTS trg_inventory_insert;
+                DROP TRIGGER IF EXISTS trg_inventory_update;
+                DROP TRIGGER IF EXISTS trg_inventory_delete;
+            ");
+
+                    // ── Customers ──────────────────────────────────────────────
+                    Run(@"CREATE TRIGGER IF NOT EXISTS trg_customers_insert
+                  AFTER INSERT ON Customers BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Receptionist','Added Customer: '||NEW.CustomerName,datetime('now','localtime'));
+                  END;");
+
+                    Run(@"CREATE TRIGGER IF NOT EXISTS trg_customers_update
+                  AFTER UPDATE ON Customers BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Receptionist','Updated Customer: '||NEW.CustomerName,datetime('now','localtime'));
+                  END;");
+
+                    Run(@"CREATE TRIGGER IF NOT EXISTS trg_customers_delete
+                  AFTER DELETE ON Customers BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Receptionist','Deleted Customer: '||OLD.CustomerName,datetime('now','localtime'));
+                  END;");
+
+                    // ── Vehicles ───────────────────────────────────────────────
+                    Run(@"CREATE TRIGGER IF NOT EXISTS trg_vehicles_insert
+                  AFTER INSERT ON Vehicles BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Receptionist','Added Vehicle: '||NEW.VehicleNo,datetime('now','localtime'));
+                  END;");
+
+                    Run(@"CREATE TRIGGER IF NOT EXISTS trg_vehicles_update
+                  AFTER UPDATE ON Vehicles BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Receptionist','Updated Vehicle: '||NEW.VehicleNo,datetime('now','localtime'));
+                  END;");
+
+                    Run(@"CREATE TRIGGER IF NOT EXISTS trg_vehicles_delete
+                  AFTER DELETE ON Vehicles BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Receptionist','Deleted Vehicle: '||OLD.VehicleNo,datetime('now','localtime'));
+                  END;");
+
+                    // ── JobCards ───────────────────────────────────────────────
+                    Run(@"CREATE TRIGGER IF NOT EXISTS trg_jobcards_insert
+                  AFTER INSERT ON JobCards BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Receptionist','Created Job Card #'||NEW.JobCardID,datetime('now','localtime'));
+                  END;");
+
+                    Run(@"CREATE TRIGGER IF NOT EXISTS trg_jobcards_update
+                  AFTER UPDATE ON JobCards BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Service Manager','Updated Job Card #'||NEW.JobCardID||' - Status: '||NEW.JobStatus,datetime('now','localtime'));
+                  END;");
+
+                    Run(@"CREATE TRIGGER IF NOT EXISTS trg_jobcards_delete
+                  AFTER DELETE ON JobCards BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Service Manager','Deleted Job Card #'||OLD.JobCardID,datetime('now','localtime'));
+                  END;");
+
+                    // ── Invoices ───────────────────────────────────────────────
+                    Run(@"CREATE TRIGGER IF NOT EXISTS trg_invoices_insert
+                  AFTER INSERT ON Invoices BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Cashier','Generated Invoice #'||NEW.InvoiceID,datetime('now','localtime'));
+                  END;");
+
+                    Run(@"CREATE TRIGGER IF NOT EXISTS trg_invoices_update
+                  AFTER UPDATE ON Invoices BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Cashier','Updated Invoice #'||NEW.InvoiceID,datetime('now','localtime'));
+                  END;");
+
+                    Run(@"CREATE TRIGGER IF NOT EXISTS trg_invoices_delete
+                  AFTER DELETE ON Invoices BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Cashier','Deleted Invoice #'||OLD.InvoiceID,datetime('now','localtime'));
+                  END;");
+
+                    // ── Inventory ──────────────────────────────────────────────
+                    Run(@"CREATE TRIGGER IF NOT EXISTS trg_inventory_insert
+                  AFTER INSERT ON Inventory BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Service Manager','Added Inventory Item: '||NEW.ItemName,datetime('now','localtime'));
+                  END;");
+
+                    Run(@"CREATE TRIGGER IF NOT EXISTS trg_inventory_update
+                  AFTER UPDATE ON Inventory BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Service Manager','Updated Inventory Item: '||NEW.ItemName,datetime('now','localtime'));
+                  END;");
+
+                    Run(@"CREATE TRIGGER IF NOT EXISTS trg_inventory_delete
+                  AFTER DELETE ON Inventory BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Service Manager','Deleted Inventory Item: '||OLD.ItemName,datetime('now','localtime'));
+                  END;");
+                }
+            }
+            catch { /* ignore trigger creation errors so app still starts */ }
         }
 
         private void DbWatcher_Changed(object? sender, FileSystemEventArgs e)

@@ -15,12 +15,12 @@ namespace AutoCare
             {
                 connection.Open();
 
-                // Foreign Keys සක්‍රීය කිරීම
+                // Foreign Keys enable
                 var enableFK = connection.CreateCommand();
                 enableFK.CommandText = "PRAGMA foreign_keys = ON;";
                 enableFK.ExecuteNonQuery();
 
-                // ටේබල් සෑදීමේ SQL Query එක
+                // Create tables
                 string createTablesQuery = @"
                     CREATE TABLE IF NOT EXISTS SystemLogs (
                         LogID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -94,24 +94,20 @@ namespace AutoCare
                     command.ExecuteNonQuery();
                 }
 
+                // Add Year column to Vehicles if missing
                 try
                 {
-                    // Inspect the internal table columns of the active SQLite file
                     using (var checkCmd = new SqliteCommand("PRAGMA table_info(Vehicles);", connection))
                     using (var reader = checkCmd.ExecuteReader())
                     {
                         bool hasYear = false;
                         while (reader.Read())
                         {
-                            // Check if a column named 'Year' is already in the table configuration
                             if (reader["name"].ToString() == "Year")
-                            {
                                 hasYear = true;
-                            }
                         }
                         reader.Close();
 
-                        // If 'Year' is not found, dynamically execute the ALTER TABLE query
                         if (!hasYear)
                         {
                             using (var alterCmd = new SqliteCommand("ALTER TABLE Vehicles ADD COLUMN Year TEXT;", connection))
@@ -121,15 +117,17 @@ namespace AutoCare
                         }
                     }
                 }
-                catch (Exception)
-                {
-                    // Fail silently if structural update verification drops or checks match
-                }
+                catch { /* ignore */ }
 
-                // ටේබල් හිස් නම් පමණක් පේළි 50ක ව්‍යාජ දත්ත ඇතුළත් කිරීම සිදු කරයි
+                // ── FIX: Wipe ALL triggers then recreate correct ones at every startup.
+                // This prevents any stale/malformed trigger (e.g. NEW.CorrectColumnName)
+                // from blocking INSERT/UPDATE on JobCards or any other table.
+                NukeAllTriggers(connection);
+                EnsureDatabaseTriggers(connection);
+
+                // Insert sample data only if DB is empty
                 InsertFakeDataIfEmpty(connection);
             }
-
         }
 
         public static SqliteConnection GetConnection()
@@ -142,21 +140,176 @@ namespace AutoCare
             return conn;
         }
 
+        // ── Drops EVERY trigger unconditionally so no malformed trigger survives
+        // across app restarts. Called at startup before EnsureDatabaseTriggers().
+        private static void NukeAllTriggers(SqliteConnection connection)
+        {
+            try
+            {
+                var listCmd = connection.CreateCommand();
+                listCmd.CommandText = "SELECT name FROM sqlite_master WHERE type = 'trigger';";
+                using var reader = listCmd.ExecuteReader();
+
+                var triggers = new System.Collections.Generic.List<string>();
+                while (reader.Read())
+                    triggers.Add(reader.GetString(0));
+
+                reader.Close();
+
+                foreach (var triggerName in triggers)
+                {
+                    try
+                    {
+                        var dropCmd = connection.CreateCommand();
+                        dropCmd.CommandText = $"DROP TRIGGER IF EXISTS \"{triggerName}\";";
+                        dropCmd.ExecuteNonQuery();
+                    }
+                    catch { /* ignore per-trigger drop errors */ }
+                }
+            }
+            catch { /* ignore — app still starts even if nuke fails */ }
+        }
+
+        // ── Creates all correct triggers using verified column names.
+        // Only called after NukeAllTriggers() so no duplicates can exist.
+        private static void EnsureDatabaseTriggers(SqliteConnection connection)
+        {
+            string[] cmds = new[]
+            {
+                // ── Customers ──────────────────────────────────────────────
+                @"CREATE TRIGGER IF NOT EXISTS trg_customers_insert
+                  AFTER INSERT ON Customers BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Receptionist','Added Customer: '||NEW.CustomerName,datetime('now','localtime'));
+                  END;",
+
+                @"CREATE TRIGGER IF NOT EXISTS trg_customers_update
+                  AFTER UPDATE ON Customers BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Receptionist','Updated Customer: '||NEW.CustomerName,datetime('now','localtime'));
+                  END;",
+
+                @"CREATE TRIGGER IF NOT EXISTS trg_customers_delete
+                  AFTER DELETE ON Customers BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Receptionist','Deleted Customer: '||OLD.CustomerName,datetime('now','localtime'));
+                  END;",
+
+                // ── Vehicles ───────────────────────────────────────────────
+                @"CREATE TRIGGER IF NOT EXISTS trg_vehicles_insert
+                  AFTER INSERT ON Vehicles BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Receptionist','Added Vehicle: '||NEW.VehicleNo,datetime('now','localtime'));
+                  END;",
+
+                @"CREATE TRIGGER IF NOT EXISTS trg_vehicles_update
+                  AFTER UPDATE ON Vehicles BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Receptionist','Updated Vehicle: '||NEW.VehicleNo,datetime('now','localtime'));
+                  END;",
+
+                @"CREATE TRIGGER IF NOT EXISTS trg_vehicles_delete
+                  AFTER DELETE ON Vehicles BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Receptionist','Deleted Vehicle: '||OLD.VehicleNo,datetime('now','localtime'));
+                  END;",
+
+                // ── JobCards ───────────────────────────────────────────────
+                @"CREATE TRIGGER IF NOT EXISTS trg_jobcards_insert
+                  AFTER INSERT ON JobCards BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Receptionist','Created Job Card #'||NEW.JobCardID,datetime('now','localtime'));
+                  END;",
+
+                @"CREATE TRIGGER IF NOT EXISTS trg_jobcards_update
+                  AFTER UPDATE ON JobCards BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Service Manager','Updated Job Card #'||NEW.JobCardID||' - Status: '||NEW.JobStatus,datetime('now','localtime'));
+                  END;",
+
+                @"CREATE TRIGGER IF NOT EXISTS trg_jobcards_delete
+                  AFTER DELETE ON JobCards BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Service Manager','Deleted Job Card #'||OLD.JobCardID,datetime('now','localtime'));
+                  END;",
+
+                // ── Invoices ───────────────────────────────────────────────
+                @"CREATE TRIGGER IF NOT EXISTS trg_invoices_insert
+                  AFTER INSERT ON Invoices BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Cashier','Generated Invoice #'||NEW.InvoiceID,datetime('now','localtime'));
+                  END;",
+
+                @"CREATE TRIGGER IF NOT EXISTS trg_invoices_update
+                  AFTER UPDATE ON Invoices BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Cashier','Updated Invoice #'||NEW.InvoiceID,datetime('now','localtime'));
+                  END;",
+
+                @"CREATE TRIGGER IF NOT EXISTS trg_invoices_delete
+                  AFTER DELETE ON Invoices BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Cashier','Deleted Invoice #'||OLD.InvoiceID,datetime('now','localtime'));
+                  END;",
+
+                // ── Inventory ──────────────────────────────────────────────
+                @"CREATE TRIGGER IF NOT EXISTS trg_inventory_insert
+                  AFTER INSERT ON Inventory BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Service Manager','Added Inventory Item: '||NEW.ItemName,datetime('now','localtime'));
+                  END;",
+
+                @"CREATE TRIGGER IF NOT EXISTS trg_inventory_update
+                  AFTER UPDATE ON Inventory BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Service Manager','Updated Inventory Item: '||NEW.ItemName,datetime('now','localtime'));
+                  END;",
+
+                @"CREATE TRIGGER IF NOT EXISTS trg_inventory_delete
+                  AFTER DELETE ON Inventory BEGIN
+                      INSERT INTO SystemLogs (UserRole, Action, Timestamp)
+                      VALUES ('Service Manager','Deleted Inventory Item: '||OLD.ItemName,datetime('now','localtime'));
+                  END;"
+            };
+
+            using (var transaction = connection.BeginTransaction())
+            {
+                try
+                {
+                    foreach (var sql in cmds)
+                    {
+                        try
+                        {
+                            using var cmd = connection.CreateCommand();
+                            cmd.Transaction = transaction;
+                            cmd.CommandText = sql;
+                            cmd.ExecuteNonQuery();
+                        }
+                        catch { /* ignore individual trigger errors */ }
+                    }
+                    transaction.Commit();
+                }
+                catch
+                {
+                    transaction.Rollback();
+                }
+            }
+        }
+
         private static void InsertFakeDataIfEmpty(SqliteConnection connection)
         {
-            // Customers ටේබල් එකේ දත්ත තියෙනවද කියා පරික්ෂා කිරීම
             string checkQuery = "SELECT COUNT(*) FROM Customers;";
             using (var cmd = new SqliteCommand(checkQuery, connection))
             {
                 long count = (long)cmd.ExecuteScalar();
-                if (count > 0) return; // දැනටමත් දත්ත තිබේ නම් නැවත දමන්නේ නැත.
+                if (count > 0) return;
             }
 
             using (var transaction = connection.BeginTransaction())
             {
                 try
                 {
-                    // 1. Services Data (සේවා 6ක්)
+                    // 1. Services
                     string queryServices = @"
                         INSERT INTO Services (ServiceName, BasePrice) VALUES 
                         ('Full Service', 9500.00),
@@ -167,24 +320,24 @@ namespace AutoCare
                         ('AC Gas Charging', 6000.00);";
                     ExecuteNonQuery(queryServices, connection, transaction);
 
-                    // 2. Inventory Data (අමතර කොටස් වර්ග 12ක් - සමහර ඒවා Low Stock)
+                    // 2. Inventory
                     string queryInventory = @"
                         INSERT INTO Inventory (ItemName, Quantity, MinStockLevel, UnitPrice) VALUES 
                         ('Toyota Oil Filter', 25, 5, 1850.00),
                         ('Suzuki Air Filter', 30, 5, 2200.00),
-                        ('Mobil 1 Engine Oil 4L', 3, 5, 16500.00), -- Low Stock Alert
+                        ('Mobil 1 Engine Oil 4L', 3, 5, 16500.00),
                         ('Castrol Edge 4L', 15, 5, 14800.00),
-                        ('Front Brake Pads (Vitz)', 2, 4, 8500.00), -- Low Stock Alert
+                        ('Front Brake Pads (Vitz)', 2, 4, 8500.00),
                         ('Rear Brake Shoe (Alto)', 12, 4, 5200.00),
                         ('Denso Spark Plug', 100, 10, 950.00),
-                        ('Wiper Blade 16 Inch', 4, 5, 1200.00), -- Low Stock Alert
+                        ('Wiper Blade 16 Inch', 4, 5, 1200.00),
                         ('Wiper Blade 24 Inch', 18, 5, 1600.00),
                         ('Coolant 1L', 40, 8, 1450.00),
                         ('Dot4 Brake Fluid', 15, 5, 980.00),
                         ('Microfiber Cloth', 50, 10, 350.00);";
                     ExecuteNonQuery(queryInventory, connection, transaction);
 
-                    // 3. Customers Data (පේළි 50ක්)
+                    // 3. Customers
                     string queryCustomers = @"
                         INSERT INTO Customers (CustomerName, Phone, Email) VALUES 
                         ('Kamal Perera', '0771234561', 'kamal@gmail.com'), ('Nimal Silva', '0771234562', 'nimal@gmail.com'),
@@ -214,7 +367,7 @@ namespace AutoCare
                         ('Chamika Karunaratne', '0712224444', 'chamika@gmail.com'), ('Binura Fernando', '0762225555', 'binura@gmail.com');";
                     ExecuteNonQuery(queryCustomers, connection, transaction);
 
-                    // 4. Vehicles Data (වාහන 50ක්)
+                    // 4. Vehicles
                     string queryVehicles = @"
                         INSERT INTO Vehicles (VehicleNo, Model, CustomerID) VALUES 
                         ('WP CB-1001', 'Toyota Vitz', 1), ('WP CAD-2002', 'Suzuki Alto', 2),
@@ -244,7 +397,7 @@ namespace AutoCare
                         ('WP CAK-9003', 'Tata Nano', 49), ('WP CAL-9004', 'Mahindra KUV100', 50);";
                     ExecuteNonQuery(queryVehicles, connection, transaction);
 
-                    // 5. JobCards Data (විවිධ තත්ත්වයන් සහිත ජොබ් කාඩ් 50ක් - Pending, Ongoing, Completed)
+                    // 5. JobCards
                     string queryJobCards = @"
                         INSERT INTO JobCards (VehicleNo, ServiceID, MechanicName, DateReceived, JobStatus) VALUES 
                         ('WP CB-1001', 1, 'Sunil', '2026-05-20 08:30:00', 'Completed'),
@@ -260,7 +413,7 @@ namespace AutoCare
                         ('WP CCO-1234', 5, 'Sunil', '2026-05-25 08:30:00', 'Completed'),
                         ('WP CAR-5678', 6, 'Nimal', '2026-05-25 11:00:00', 'Completed'),
                         ('WP CBA-9101', 1, 'Jagath', '2026-05-26 13:00:00', 'Completed'),
-                        ('WP CAB-1121', 2, 'Sman', '2026-05-26 14:30:00', 'Completed'),
+                        ('WP CAB-1121', 2, 'Saman', '2026-05-26 14:30:00', 'Completed'),
                         ('WP CBD-3141', 3, 'Kamal', '2026-05-27 09:00:00', 'Completed'),
                         ('SP CAD-5161', 4, 'Sunil', '2026-05-27 10:15:00', 'Completed'),
                         ('WP CBE-7181', 5, 'Nimal', '2026-05-28 11:30:00', 'Completed'),
@@ -282,7 +435,6 @@ namespace AutoCare
                         ('WP CBU-3333', 3, 'Jagath', '2026-06-03 11:10:00', 'Completed'),
                         ('WP CBV-4444', 4, 'Saman', '2026-06-03 13:30:00', 'Completed'),
                         ('WP CBW-5555', 5, 'Kamal', '2026-06-03 15:00:00', 'Completed'),
-                        -- අද දින වැඩ (June 04) - සමහර ඒවා Ongoing සහ Pending (Dashboard එකට මරු)
                         ('WP CBX-6666', 1, 'Sunil', '2026-06-04 08:00:00', 'Completed'),
                         ('WP CBY-7777', 2, 'Nimal', '2026-06-04 08:30:00', 'Completed'),
                         ('WP CBZ-8888', 3, 'Jagath', '2026-06-04 09:00:00', 'Completed'),
@@ -300,7 +452,7 @@ namespace AutoCare
                         ('WP CAL-9004', 3, null, '2026-06-04 17:00:00', 'Pending');";
                     ExecuteNonQuery(queryJobCards, connection, transaction);
 
-                    // 6. JobItems Data (ජොබ් වලට පාවිච්චි කල බඩු විස්තර)
+                    // 6. JobItems
                     string queryJobItems = @"
                         INSERT INTO JobItems (JobCardID, ItemID, QtyUsed) VALUES 
                         (1, 1, 1), (1, 3, 1), (3, 3, 1), (3, 7, 4),
@@ -312,7 +464,7 @@ namespace AutoCare
                         (35, 11, 2), (36, 1, 1), (36, 3, 1), (38, 4, 1);";
                     ExecuteNonQuery(queryJobItems, connection, transaction);
 
-                    // 7. Invoices Data (ඉවර වුණු Completed ජොබ් වලට අදාළ බිල්පත් 38ක් - Paid තත්ත්වයෙන්)
+                    // 7. Invoices
                     string queryInvoices = @"
                         INSERT INTO Invoices (JobCardID, ServiceCost, MaterialCost, TotalAmount, PaymentStatus, PaymentDate) VALUES 
                         (1, 9500.00, 18350.00, 27850.00, 'Paid', '2026-05-20 12:00:00'),
@@ -355,7 +507,7 @@ namespace AutoCare
                         (38, 1500.00, 14800.00, 16300.00, 'Paid', '2026-06-04 13:20:00');";
                     ExecuteNonQuery(queryInvoices, connection, transaction);
 
-                    // 8. System Logs Data (පද්ධති ක්‍රියාකාරකම් සටහන්)
+                    // 8. System Logs
                     string queryLogs = @"
                         INSERT INTO SystemLogs (UserRole, Action, Timestamp) VALUES 
                         ('Admin', 'Database Initialized with Sample Data', '2026-05-20 08:00:00'),
@@ -374,67 +526,7 @@ namespace AutoCare
                 catch (Exception)
                 {
                     transaction.Rollback();
-                    throw; // App.xaml.cs එකට වැරැද්ද පාස් කිරීම
-                }
-            }
-        }
-
-        // Call this from InitializeDatabase() after tables are created.
-        private static void EnsureDatabaseTriggers(SqliteConnection connection)
-        {
-            string[] cmds = new[]
-            {
-        // Drop any existing triggers first so we can recreate correct ones
-        "DROP TRIGGER IF EXISTS trg_jobcards_insert;",
-        "DROP TRIGGER IF EXISTS trg_jobcards_update;",
-        "DROP TRIGGER IF EXISTS trg_jobcards_delete;",
-
-        // Create correct JobCards triggers using JobCardID / JobStatus
-        @"CREATE TRIGGER trg_jobcards_insert
-          AFTER INSERT ON JobCards
-          BEGIN
-            INSERT INTO SystemLogs (UserRole, Action, Timestamp)
-            VALUES ('Service Manager',
-                    'Created Job Card #' || NEW.JobCardID,
-                    datetime('now','localtime'));
-          END;",
-
-        @"CREATE TRIGGER trg_jobcards_update
-          AFTER UPDATE ON JobCards
-          BEGIN
-            INSERT INTO SystemLogs (UserRole, Action, Timestamp)
-            VALUES ('Service Manager',
-                    'Updated Job Card #' || NEW.JobCardID || ' - Status: ' || NEW.JobStatus,
-                    datetime('now','localtime'));
-          END;",
-
-        @"CREATE TRIGGER trg_jobcards_delete
-          AFTER DELETE ON JobCards
-          BEGIN
-            INSERT INTO SystemLogs (UserRole, Action, Timestamp)
-            VALUES ('Service Manager',
-                    'Deleted Job Card #' || OLD.JobCardID,
-                    datetime('now','localtime'));
-          END;"
-    };
-
-            using (var cmd = connection.CreateCommand())
-            using (var transaction = connection.BeginTransaction())
-            {
-                try
-                {
-                    cmd.Transaction = transaction;
-                    foreach (var sql in cmds)
-                    {
-                        cmd.CommandText = sql;
-                        cmd.ExecuteNonQuery();
-                    }
-                    transaction.Commit();
-                }
-                catch (Exception ex)
-                {
-                    transaction.Rollback();
-                    System.Diagnostics.Debug.WriteLine("EnsureDatabaseTriggers failed: " + ex.Message);
+                    throw;
                 }
             }
         }
@@ -446,6 +538,5 @@ namespace AutoCare
                 command.ExecuteNonQuery();
             }
         }
-
     }
 }
